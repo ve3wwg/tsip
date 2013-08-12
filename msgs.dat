@@ -1044,4 +1044,36 @@ R 8F 60 DR Calibration and Status Report
 : 9 single grscalef 
 : 13 byte flag 1=digital, 2=analog
 
+R 8F 62 GPS/DR Position/Velocity Report
+: 1 double time_tag Time when position/velocity solution computed
+: 9 double latitude meters
+: 17 double longitude meters
+: 25 double altitude meters
+: 33 double clockbias seconds
+: 41 integer possource table 3-174
+: 43 double evolocity m/sec
+: 51 double nvelocity m/sec
+: 59 double uvelocity m/sec
+: 67 double clockbiasvel 
+: 75 byte velsource flag: 0=vel fix, east-north-up (ENU), 1=XYZ Cartesian (ECEF)
+: 76 byte shstatus flags
+: 77 byte svcount No. of satellites used in position solution computation
+: 78-n byte svprn Pseudorandom number of satellite included in solution
+
+R 8F 64 Firmware Version and Configuration Report
+: 1 byte rpttype 0x00: Reports the boad config and intermediate frequency (fixme more types)
+: 2-n byte Board config string + IF config string and checksum (varies)
+
+R 8F 6B Last Gyroscope Readings Report
+: 1 double gheading Gyro heading
+: 9 double ghrate Gyro heading rate (radians)
+: 17 double ghrbias Gyro heading rate bias (deg/sec)
+: 25 double timetag hh:mm:ss Time when gyroscope reading is computed
+: 33 double gdutycycle fraction of 1, representing the heading sensor output
+: 41 byte health flags (0=no errors)
+: 42 double gscalef1 Gyro scale factor 1
+: 50 double gscalef2 
+: 58 single gvar Gyro variance (radians^2)
+: 62 single hcorr Heading correction (radians)
+
 R 10 - End
