@@ -1,0 +1,1047 @@
+R 13 - TSIP Parsing Error Notification
+: 0 byte packet_id Packet ID
+: 1-n byte contents Contents of errant packet
+
+R 1A 00 RTCM Wrapper / Port A Echo Report
+: 1-n byte data The raw data
+
+R 3D - Serial Port A Configuration Report
+: 0 byte output_baud_rate Output baud rate
+: 1 byte input_baud_rate Input baud rate
+: 2 byte parity_bits Parity and # bits
+: 3 byte stop_flow Stop bits and hardware flow control
+: 4 byte out_protocol Output protocol
+: 5 byte in_protocol Input protocol
+
+R 40 - Almanac Data for Single Satellite Report
+: 0 byte satellite SV pseudorandom number (PRN) 1-32
+: 1 single t_zc Units are seconds
+: 5 integer week_no Week number
+: 7 single eccentricity  Dimensionless
+: 11 single t_oa seconds
+: 15 single i_o radians
+: 19 single omega_dot radians/sec
+: 23 single sqrt_a meters ** 0.5
+: 27 single omega_o radians
+: 31 single omega radians
+: 35 single m_o radians
+
+R 41 - GPS Time Report
+: 0 single time GPS time of week (seconds)
+: 4 integer week GPS week number (weeks)
+: 6 single offset UTC/GPS time offset
+
+R 42 - Single Precision Position Fix (XYZ Cartesian ECEF) Report
+: 0 single x Position along x-axis
+: 4 single y Position along y-axis
+: 8 single z Position along z-axis
+: 12 single:double:state_sd time_of_fix Time of position solution in GPS seconds
+
+R 43 - Velocity Fix (XYZ Cartesian ECEF) Report
+: 0 single x_velocity Velocity of vehicle along x-axis (m/sec)
+: 4 single y_velocity Velocity of vehicle along y-axis (m/sec)
+: 8 single z_velocity Velocity of vehicle along z-axis (m/sec)
+: 12 single bias_rate Bias rate in m/sec
+: 16 single:double:state_sd time_of_fix Time of position fix in GPS seconds
+
+R 44 - Non-Overdetermined Satellite Selection Report
+: 0 byte flag Mode
+: 1 byte satellite1 Satellite number 1
+: 2 byte satellite2 Satellite number 2
+: 3 byte satellite3 Satellite number 3
+: 4 byte satellite4 Satellite number 4
+: 5 single pdop Precision dilution of precision
+: 9 single hdop Horizontal dilution of precision
+: 13 single vdop Vertical dilution of precision
+: 17 single tdop Time dilution of precision
+
+R 45 - Receiver Firmware Information Report
+: 0 byte nav_proc_major Major portion of NAV Processor firmware release number
+: 1 byte nav_proc_minor Minor portion of NAV Processor firmware release number
+: 2 byte nav_proc_month Month of year when firmware released (1-12)
+: 3 byte nav_proc_day Day of month when firmware released (1-31)
+: 4 byte nav_proc_year Year - 1900, when firmware released
+: 5 byte sig_proc_major Major portion of SIG Processor firmware
+: 6 byte sig_proc_minor Minor portion of SIG Processor firmware
+: 7 byte sig_proc_month Month of year when firmware released (1-12)
+: 8 byte sig_proc_day   Day of month when firmware released (1-31)
+: 9 byte sig_proc_year  Year - 1900, when firmware released
+: 10-14 byte bsd_serial_no Serial number in BCD
+: 15 byte checksum Checksum of serial number (least sig byte of sums 10-14 = 0XFF)
+: 16 integer revision Configuration revision number (0x00)
+: 18 byte machine_id Receiver machine ID (see product specific codes)
+: 19 byte config_length Length of data in configuration block (74)
+: 20 byte channels Number of channels (8-12)
+: 21 byte rtcm_input RTCM input status
+: 22 byte rtcm_output RTCM output status
+: 23 byte fix_rate Maximum fix rate (flags)
+: 24 byte sync_meas Synchronized measurement status (flags)
+: 25 byte misc Default value (3)
+: 26 byte nmea_output NMEA output status (flags)
+: 27 byte pps1_output 1 PPS Output Status
+: 28 byte product_id Receiver product ID
+: 29 byte reserved1 0x01
+: 30-93 byte reserved2 0x00
+: 94 integer Checksum of bytes 20-93
+
+R 46 - Health of Receiver Report
+: 0 byte status Current status of receiver (flags)
+: 1 byte error_code Error status (flags)
+
+R 47 - Signal Levels for All Satellites
+: 0 byte count Number of satellite records in packet
+: 1 byte sat1 PRN number of first satellite
+: 2 single signal_lev1 Signal level of first satellite
+: 6 byte sat2 PRN number
+: 7 single signal_lev2 Signal level
+: 11 byte sat3 PRN number
+: 12 single signal_lev3 Signal level
+: 16 byte sat4 PRN number
+: 17 single signal_lev4 Signal level
+: 21 byte sat5 PRN number
+: 22 single signal_lev5 Signal level
+: 26 byte sat6 PRN number
+: 27 single signal_lev6 Signal level
+: 31 byte sat7 PRN number
+: 32 single signal_lev7 Signal level
+: 36 byte sat8 PRN number
+: 37 single signal_lev8 Signal level
+: 41 byte sat9 PRN number
+: 42 single signal_lev9 Signal level
+: 46 byte sat10 PRN number
+: 47 single signal_lev10 Signal level
+: 51 byte sat11 PRN number
+: 52 single signal_lev11 Signal level
+: 56 byte sat12 PRN number
+: 57 single signal_lev12 Signal level
+
+R 48 - GPS System Message Report
+: 0-21 byte message Free form ASCII message
+
+R 49 - Almanac Health Page Report
+: 0 byte health1 0 == healthy, else flags
+: 1 byte health2 etc.
+: 2 byte health3
+: 3 byte health4 
+: 4 byte health5 
+: 5 byte health6 
+: 6 byte health7 
+: 7 byte health8 
+: 8 byte health9 
+: 9 byte health10
+: 10 byte health11 
+: 11 byte health12 
+: 12 byte health13 
+: 13 byte health14 
+: 14 byte health15 
+: 15 byte health16 
+: 16 byte health17 
+: 17 byte health18 
+: 18 byte health19 
+: 19 byte health20 
+: 20 byte health21 
+: 21 byte health22 
+: 22 byte health23 
+: 23 byte health24 
+: 24 byte health25 
+: 25 byte health26 
+: 26 byte health27 
+: 27 byte health28 
+: 28 byte health29 
+: 29 byte health30 
+: 30 byte health31 
+: 31 byte health32 
+
+R 4A - Single-Precision LLA Position Fix Report
+: 0 single latitude Latitude used on position solution computation + for North, - for South
+: 4 single longitude Longitude used on the position solution computation + for East, - for West
+: 8 single altitude Altitude used in position solution
+: 12 single clock_bias Clock bias
+: 16 single:double:state_sd time_of_fix Time of fix (seconds)
+
+R 4B - Machine/Code ID and Additional Status Report
+: 0 byte machine_id Machine ID for receiver
+: 1 byte status_flags1 
+: 2 byte status_flags2
+
+R 4C - Operating Parameters Report
+: 0 byte dynamics_code Reports the expected vehicle dynamics and is used to assist solution (default 1=Land)
+: 1 single elevation_mask Reports lowest angle at which the receiver can use a satellite (radians)
+: 5 single signal_level_mask Reports the minimum signal level for fixes (AMUs)
+: 9 single pdop_mask Maximum PDOP for calculating position fixes
+: 13 single podp_switch Influences 2D or 3D fix depending on PDOP
+
+R 4D - Oscillator Offset Report
+: 0 single offset GPS oscillator offset in Hz
+
+R 4E - GPS Time COmmand Verification
+: 0 byte yn Returns 'Y' or 'N'
+
+R 4F - UTC Parameters Report
+: 0 double a0 Refer to ICD-GPS-200 specification
+: 8 single a1
+: 12 integer delta_t_ls
+: 14 single tot
+: 18 integer wn_t
+: 20 integer wn_lsf
+: 22 integer dn
+: 24 integer delta_t_lsf
+
+R 53 - Analog-to-Digital Readings Report
+: 0 single receiver temperature
+: 4 single reserved1 set to zero
+: 8 single reserved2 set to sero
+: 12 single voltage of antenna DC power supply/AGC (volts)
+: 16 single supplyv Battery/Power supply voltage (volts)
+: 20 single Antenna current in Amps * 10.34
+: 24 single pwr25 +2.5V (nominal) power
+: 28 single pwr50 +5.0V (nominal) power
+
+R 54 - One Satellite Bias and Bias Rate Report
+: 0 single bias One satellite bias (meters)
+: 4 single bias_rate Click bias rate (m/sec)
+: 8 single:double:state_sd time_of_fix Time of position fix in GPS seconds
+
+R 55 - I/O Options Report
+: 0 byte position Position flags
+: 1 byte velocity Flags
+: 2 byte timing Flags
+: 3 byte auxiliary Flags
+
+R 56 - Velocity Fix East-North (ENU) Report
+: 0 single eastvel East velocity + for east, - for west (m/sec)
+: 4 single northvel North velocity + for north, - for south (m/sec)
+: 8 single upvel Up velocity + for up, - for down
+: 12 single clock_bias_rate Clock bias rate (m/sec)
+: 16 single:double:state_sd time_of_fix Time when fix computed (seconds)
+
+R 57 - Last Computed Fix Report
+: 0 byte info_src Source of info (flags)
+: 1 byte diag_code Manufacturers diagnostic code
+: 2 single fix_time Time of last position fix in GPS seconds
+: 6 integer fix_week Week of last position fix, in GPS weeks
+
+R 58 - Satellte Sytem Data Reports
+: 0 byte operation Type of satellite operation (flags)
+: 1 byte datatype Type of satellite information included (flags)
+: 2 byte sv_prn Satellite information in the rpt is for all satellites (0) or specific
+: 3 byte n Length of satellite data
+: 4-n byte satdata content depends upon datatype
+
+R 59 - Satellite Attribute Database Status Report
+: 0 byte operation 0x03:1-32 is enable/disable; 0x06:1-32 heed/ignore
+: 1-32 byte sv_flags flags
+
+R 5A - Raw Measurement Data Report
+: 0 byte sv_prn Satellite pseudorandom number (1-32)
+: 1 single samplength Time elapsing while a measurement is averaged (msec)
+: 5 single siglevel Approx of C/N0, in AMU's.
+: 9 single code_phase Average Coarse/Acquisition code delay
+: 13 single doppler Apparent carrier frequency offset (Hz)
+: 17 double time Center of the sample interval (sconds)
+
+R 5B - Satellite Ephemeris Status Report
+: 0 byte sv_prn Pseudorandom number of satellite
+: 1 single coltime GPS time when Ephemeris data collected from sat
+: 5 byte health 6-bit ephemeris health
+: 6 byte iode Issue of Data Ephemerus
+: 7 single t_oe Seconds
+: 11 byte fit_ival_flag 
+: 12 single ura Meters
+
+R 5C - Satellite Tracking Status Report
+: 0 byte sv_prn Pseudorandom number of sat.
+: 1 byte chan_slot Channel and slot code 
+: 2 byte aquisflag Aquisition flag
+: 3 byte ephemflag Ephemeris flag
+: 4 single siglevel Signal level (Same as 0x5A)
+: 8 single gps_time GPS Time of last measurement
+: 12 single elevation Approximate elevation of sat above horiz (radians)
+: 16 single azimuth Approximate azimut from true north (radians)
+: 20 byte oldmeas Old measurement flat 
+: 21 byte intmsec Status of the integer millisecond range to spec. sat.
+: 22 byte baddata Bad data flag (or zero) 
+: 23 byte datacol Data collect flag (0=not collecting)
+
+R 5E - Additional Fix Status Report
+: 0 byte prevmeas Measurements used in current fix used in the previous fix/status
+: 1 byte oldmeas  Number of old measurements in current fix (2-3s)
+
+R 5F - Severe Failure Notification
+: 0 byte hex0x02 Hex 0x02
+: 1-n byte message ASCII text message
+
+R 60 - Differential GPS Pseudorange Corrections Report
+: 0 integer zcount Modified Z-count in units of 0.6 seconds
+: 2 byte station_health Health of the reference station
+: 3 byte verstype Bits identify RTCM version number and record type
+: 4 byte scale1 Flags identify RTCM scale factor
+: 5 integer prc1 Pseudorandom correction
+: 7 byte rrc1 Range rate correction, note signed
+: 8 byte iode1 The IODE used by the reference station
+: 9 byte scale2 
+: 10 integer prc2
+: 12 byte rrc2 
+: 13 byte iode2
+: 14 byte scale3
+: 15 integer prc3
+: 17 byte rrc3
+: 18 byte iode3
+: 19 byte scale4
+: 20 integer prc4
+: 22 byte rrc4
+: 23 byte iode4
+: 24 byte scale5
+: 25 integer prc5
+: 27 byte rrc5
+: 28 byte iode5
+: 29 byte scale6
+: 30 integer prc6
+: 32 byte rrc6
+: 33 byte iode6
+: 34 byte scale7
+: 35 integer prc7
+: 37 byte rrc7
+: 38 byte iode7
+: 39 byte scale8
+: 40 integer prc8
+: 42 byte rrc8
+: 43 byte iode8
+: 44 byte scale9
+: 45 integer prc9
+: 47 byte rrc9
+: 48 byte iode9
+: 49 byte scale10
+: 50 integer prc10
+: 52 byte rrc10
+: 53 byte iode10
+: 54 byte scale11
+: 55 integer prc11
+: 57 byte rrc11
+: 58 byte iode11
+: 59 byte scale12
+: 60 integer prc12
+: 62 byte rrc12
+: 63 byte iode12
+
+R 61 - Differential GPS Delta Pseudorange Corrections Report
+: 0 integer zcount Modified Z count in units of 0.6 seconds
+: 2 byte vers RTCM version and number of satellites included in report
+: 3 byte scale1 Scale/UDRE/SV# of each satellite included
+: 4 integer dprc1 RTCM SC-104 delta pseudorange corrections
+: 6 byte scale2
+: 7 integer dprc2
+: 9 byte scale3
+: 10 integer dprc3
+: 12 byte scale4
+: 13 integer dprc4
+: 15 byte scale5
+: 16 integer dprc5
+: 18 byte scale6
+: 19 integer dprc6
+: 21 byte scale7
+: 22 integer dprc7
+: 24 byte scale8
+: 25 integer dprc8
+: 27 byte scale9
+: 28 integer dprc9
+: 30 byte scale10
+: 31 integer dprc10
+: 33 byte scale11
+: 34 integer dprc11
+: 36 byte scale12
+: 37 integer dprc12
+
+R 6A 00 Differential Corrections Used in Fix Reports
+: 1 long fixtimetag Milliseconds into week of fix
+: 5 byte sats Number of satellites
+: 6 byte satid1 Satellite PRN (1-32)
+: 7 single rc1 Range correction (meters)
+: 11 single rrc1 Range rate correction
+: 15 byte satid2
+: 16 single rc2
+: 20 single rrc2
+: 24 byte satid3
+: 25 single rc3
+: 29 single rrc3
+: 33 byte satid4
+: 34 single rc4
+: 38 single rrc4
+: 42 byte satid5
+: 43 single rc5
+: 47 single rrc5
+: 51 byte satid6
+: 52 single rc6
+: 56 single rrc6
+: 60 byte satid7
+: 61 single rc7
+: 65 single rrc7
+: 69 byte satid8
+: 70 single rc8
+: 74 single rrc8
+: 78 byte satid9
+: 79 single rc19
+: 83 single rrc9
+: 87 byte satid10
+: 88 single rc110
+: 92 single rrc10
+: 96 byte satid11
+: 97 single rc111
+: 101 single rrc11
+: 105 byte satid12
+: 106 single rc112
+: 110 single rrc12
+
+R 6A 01 Fix Differential Corrections Output Control Report
+: 1 byte outen Output enabled (1) or disabled(0)
+: 2 byte reserved1 Zero
+: 3 byte reserved2 Zero
+
+R 6D - All-In-View Satellite Selection Report
+: 0 byte fixmode GPS postion fix mode
+: 1 single pdop Precision Dilution of Precision
+: 5 single hdop Horizontal dilution
+: 9 single vdop Vertical dilution
+: 13 single tdop Time dilution
+: 17 byte sv_prn0 Pseudorandom number (0-32) of first sat in view
+: 18 byte sv_prn1
+: 19 byte sv_prn2
+: 20 byte sv_prn3
+: 21 byte sv_prn4
+: 22 byte sv_prn5
+: 23 byte sv_prn6
+: 24 byte sv_prn7
+: 25 byte sv_prn8
+: 26 byte sv_prn9
+: 27 byte sv_prn10
+: 28 byte sv_prn11
+: 29 byte sv_prn12
+: 30 byte sv_prn13
+: 31 byte sv_prn14
+: 32 byte sv_prn15
+: 33 byte sv_prn16
+: 34 byte sv_prn17
+: 35 byte sv_prn18
+: 36 byte sv_prn19
+: 37 byte sv_prn20
+: 38 byte sv_prn21
+: 39 byte sv_prn22
+: 40 byte sv_prn23
+: 41 byte sv_prn24
+: 42 byte sv_prn25
+: 43 byte sv_prn26
+: 44 byte sv_prn27
+: 45 byte sv_prn28
+: 46 byte sv_prn29
+: 47 byte sv_prn30
+: 48 byte sv_prn31
+: 49 byte sv_prn32
+
+R 6E 01 Synchronized Measurement Parameters Report
+: 1 byte enable 0=Disabled, 1=filtered, 3=enabled (raw)
+: 2 byte outival Output interval in seconds (1-255)
+
+R 6F 01 Synchronized Measurements Report
+: 1 byte preamble Begin preamble
+: 2 integer length No. of bytes: preamble to postamble inclusive
+: 4 double recvtime Time of GPS week (msecs)
+: 12 double clkoffset Receiver clock offset (msecs)
+: 20 byte nsats Number of satellites in packet
+: 21 byte sv_prn1 Pseudorandom number of satellite (1-32)
+: 22 byte flagsa1 Flags 1
+: 23 byte flagsb1 Flags 2
+: 24 byte elevation_angle1 Satellite elevation angle (degrees)
+: 25 integer azimuth1 Satellite azimuth (degrees)
+: 27 byte snrx241 Number of AMUs x 4
+: 28 double pseudorange1 Full L1 C/A pseudorange (meters)
+: 36 double phase1 L1 band continuous phase
+: 44 single doppler1 L1 band doppler
+: 48 byte sv_prn2
+: 49 byte flagsa2
+: 50 byte flagsb2
+: 51 byte elevation_angle2
+: 52 integer azimuth2
+: 54 byte snrx242
+: 55 double pseudorange2
+: 63 double phase2
+: 71 single doppler2
+: 75 byte sv_prn3
+: 76 byte flagsa3
+: 77 byte flagsb3
+: 78 byte elevation_angle3
+: 79 integer azimuth3
+: 81 byte snrx243
+: 82 double pseudorange3
+: 90 double phase3
+: 98 single doppler3
+: 102 byte sv_prn4
+: 103 byte flagsa4
+: 104 byte flagsb4
+: 105 byte elevation_angle4
+: 106 integer azimuth4
+: 108 byte snrx244
+: 109 double pseudorange4
+: 117 double phase4
+: 125 single doppler4
+: 129 byte sv_prn5
+: 130 byte flagsa5
+: 131 byte flagsb5
+: 132 byte elevation_angle5
+: 133 integer azimuth5
+: 135 byte snrx245
+: 136 double pseudorange5
+: 144 double phase5
+: 152 single doppler5
+: 156 byte sv_prn6
+: 157 byte flagsa6
+: 158 byte flagsb6
+: 159 byte elevation_angle6
+: 160 integer azimuth6
+: 162 byte snrx246
+: 163 double pseudorange6
+: 171 double phase6
+: 179 single doppler6
+: 183 byte sv_prn7
+: 184 byte flagsa7
+: 185 byte flagsb7
+: 186 byte elevation_angle7
+: 187 integer azimuth7
+: 189 byte snrx247
+: 190 double pseudorange7
+: 198 double phase7
+: 206 single doppler7
+: 210 byte sv_prn8
+: 211 byte flagsa8
+: 212 byte flagsb8
+: 213 byte elevation_angle8
+: 214 integer azimuth8
+: 216 byte snrx248
+: 217 double pseudorange8
+: 225 double phase8
+: 233 single doppler8
+: 237 byte sv_prn9
+: 238 byte flagsa9
+: 239 byte flagsb9
+: 240 byte elevation_angle9
+: 241 integer azimuth9
+: 243 byte snrx249
+: 244 double pseudorange9
+: 252 double phase9
+: 260 single doppler9
+: 264 byte sv_prn10
+: 265 byte flagsa10
+: 266 byte flagsb10
+: 267 byte elevation_angle10
+: 268 integer azimuth10
+: 270 byte snrx2410
+: 271 double pseudorange10
+: 279 double phase10
+: 287 single doppler10
+: 291 byte sv_prn11
+: 292 byte flagsa11
+: 293 byte flagsb11
+: 294 byte elevation_angle11
+: 295 integer azimuth11
+: 297 byte snrx2411
+: 298 double pseudorange11
+: 306 double phase11
+: 314 single doppler11
+: 318 byte sv_prn12
+: 319 byte flagsa12
+: 320 byte flagsb12
+: 321 byte elevation_angle12
+: 322 integer azimuth12
+: 324 byte snrx2412
+: 325 double pseudorange12
+: 333 double phase12
+: 341 single doppler12
+: 345 byte sv_prn13
+: 346 byte flagsa13
+: 347 byte flagsb13
+: 348 byte elevation_angle13
+: 349 integer azimuth13
+: 351 byte snrx2413
+: 352 double pseudorange13
+: 360 double phase13
+: 368 single doppler13
+: 372 byte sv_prn14
+: 373 byte flagsa14
+: 374 byte flagsb14
+: 375 byte elevation_angle14
+: 376 integer azimuth14
+: 378 byte snrx2414
+: 379 double pseudorange14
+: 387 double phase14
+: 395 single doppler14
+: 399 byte sv_prn15
+: 400 byte flagsa15
+: 401 byte flagsb15
+: 402 byte elevation_angle15
+: 403 integer azimuth15
+: 405 byte snrx2415
+: 406 double pseudorange15
+: 414 double phase15
+: 422 single doppler15
+: 426 byte sv_prn16
+: 427 byte flagsa16
+: 428 byte flagsb16
+: 429 byte elevation_angle16
+: 430 integer azimuth16
+: 432 byte snrx2416
+: 433 double pseudorange16
+: 441 double phase16
+: 449 single doppler16
+: 453 byte sv_prn17
+: 454 byte flagsa17
+: 455 byte flagsb17
+: 456 byte elevation_angle17
+: 457 integer azimuth17
+: 459 byte snrx2417
+: 460 double pseudorange17
+: 468 double phase17
+: 476 single doppler17
+: 480 byte sv_prn18
+: 481 byte flagsa18
+: 482 byte flagsb18
+: 483 byte elevation_angle18
+: 484 integer azimuth18
+: 486 byte snrx2418
+: 487 double pseudorange18
+: 495 double phase18
+: 503 single doppler18
+: 507 byte sv_prn19
+: 508 byte flagsa19
+: 509 byte flagsb19
+: 510 byte elevation_angle19
+: 511 integer azimuth19
+: 513 byte snrx2419
+: 514 double pseudorange19
+: 522 double phase19
+: 530 single doppler19
+: 534 byte sv_prn20
+: 535 byte flagsa20
+: 536 byte flagsb20
+: 537 byte elevation_angle20
+: 538 integer azimuth20
+: 540 byte snrx2420
+: 541 double pseudorange20
+: 549 double phase20
+: 557 single doppler20
+: 561 byte sv_prn21
+: 562 byte flagsa21
+: 563 byte flagsb21
+: 564 byte elevation_angle21
+: 565 integer azimuth21
+: 567 byte snrx2421
+: 568 double pseudorange21
+: 576 double phase21
+: 584 single doppler21
+: 588 byte sv_prn22
+: 589 byte flagsa22
+: 590 byte flagsb22
+: 591 byte elevation_angle22
+: 592 integer azimuth22
+: 594 byte snrx2422
+: 595 double pseudorange22
+: 603 double phase22
+: 611 single doppler22
+: 615 byte sv_prn23
+: 616 byte flagsa23
+: 617 byte flagsb23
+: 618 byte elevation_angle23
+: 619 integer azimuth23
+: 621 byte snrx2423
+: 622 double pseudorange23
+: 630 double phase23
+: 638 single doppler23
+: 642 byte sv_prn24
+: 643 byte flagsa24
+: 644 byte flagsb24
+: 645 byte elevation_angle24
+: 646 integer azimuth24
+: 648 byte snrx2424
+: 649 double pseudorange24
+: 657 double phase24
+: 665 single doppler24
+: 669 byte sv_prn25
+: 670 byte flagsa25
+: 671 byte flagsb25
+: 672 byte elevation_angle25
+: 673 integer azimuth25
+: 675 byte snrx2425
+: 676 double pseudorange25
+: 684 double phase25
+: 692 single doppler25
+: 696 byte sv_prn26
+: 697 byte flagsa26
+: 698 byte flagsb26
+: 699 byte elevation_angle26
+: 700 integer azimuth26
+: 702 byte snrx2426
+: 703 double pseudorange26
+: 711 double phase26
+: 719 single doppler26
+: 723 byte sv_prn27
+: 724 byte flagsa27
+: 725 byte flagsb27
+: 726 byte elevation_angle27
+: 727 integer azimuth27
+: 729 byte snrx2427
+: 730 double pseudorange27
+: 738 double phase27
+: 746 single doppler27
+: 750 byte sv_prn28
+: 751 byte flagsa28
+: 752 byte flagsb28
+: 753 byte elevation_angle28
+: 754 integer azimuth28
+: 756 byte snrx2428
+: 757 double pseudorange28
+: 765 double phase28
+: 773 single doppler28
+: 777 byte sv_prn29
+: 778 byte flagsa29
+: 779 byte flagsb29
+: 780 byte elevation_angle29
+: 781 integer azimuth29
+: 783 byte snrx2429
+: 784 double pseudorange29
+: 792 double phase29
+: 800 single doppler29
+: 804 byte sv_prn30
+: 805 byte flagsa30
+: 806 byte flagsb30
+: 807 byte elevation_angle30
+: 808 integer azimuth30
+: 810 byte snrx2430
+: 811 double pseudorange30
+: 819 double phase30
+: 827 single doppler30
+: 831 byte sv_prn31
+: 832 byte flagsa31
+: 833 byte flagsb31
+: 834 byte elevation_angle31
+: 835 integer azimuth31
+: 837 byte snrx2431
+: 838 double pseudorange31
+: 846 double phase31
+: 854 single doppler31
+: 858 byte sv_prn32
+: 859 byte flagsa32
+: 860 byte flagsb32
+: 861 byte elevation_angle32
+: 862 integer azimuth32
+: 864 byte snrx2432
+: 865 double pseudorange32
+: 873 double phase32
+: 881 single doppler32
+
+R 70 - Position/Velocity Filter Operation Packet
+: 0 byte dynfilter Dynamic filter 0=disabled/1=enabled
+: 1 byte statfilter Static filter 0=disabled/1=enabled
+: 2 byte altfilter Altitude filter 0=disabled/1=enabled
+: 3 byte reserved Zero
+
+R 76 - Overdetermined Mode Report
+: 0 byte fixtype Overdetermined position fix mode (1=overdetermined/2=weighted)
+
+R 78 - Maximum PRC Age Report
+: 0 integer maxprcage Max pseudorange correction age (seconds)
+
+R 7B 00 NMEA Output Control Reports
+: 1 byte interval Time between NMEA messages (pos fix rate when zero)
+: 2-5 byte msgmask NMEA bit-mask for outputing messages
+
+R 7B 06 NMEA Message Options and Precision Report
+: 1 byte message GGA Options and Precision
+: 2 byte optflags GGA Option values
+: 3 byte precision GGA precision (0-7 decimals)
+
+R 7B 80 NMEA Interval and Message Mask Report
+: 1 byte interval Time between NMEA messages (pos fix rate when zero)
+: 2-5 byte msgmask NMEA bit mask for outputing messages
+
+R 7B 84 NMEA Name List/Message Mask Report
+: 1 byte contents 0x01 Message name list only
+: 2-n byte msglist Comma-delimited NMEA name list
+
+R 7B 85 NMEA Local Time Offsets Report
+: 1 byte houroffset GMT hours - local hours
+: 2 byte minoffset GMT minuts - local minutes
+
+R 7B 86 NMEA Message Options and Precision Report
+: 1 byte message 
+: 2 byte optflags
+: 3 byte precision 0-7 decimals
+
+R 7D 00 Position Fix Rate Configuration Reports
+: 1 byte asap_rate Position fixes per second (1-10)
+
+R 7D 01 Position Fix Rate Options Report
+: 1 byte opt1flags
+: 2 byte opt2flags
+
+R 7D 03 Maximum Measurement Age Report
+: 1 integer max_age 1-5000 ms : Allow meas used in pos to be at most this old
+
+R 7D 05 CTS to Transmit Delay Report
+: 1 integer cts_delay 0-32000 ms
+
+R 7D 06 RTS Trailing Edge Delay Report
+: 1 integer rts_delay 0-32000 ms
+
+R 7D 09 Time-Based Message Interval Report
+: 1 byte port 
+: 2 byte protocol 0=TSIP/1=NMEA
+: 3 byte interval interval code
+: 4-11 byte reserved
+: 12 integer checksum
+
+# R 7D 7F Fast Rate Option Not Installed Notification
+
+R 82 - Differential Position Fix Mode Report
+: 0 byte mode flags
+: 1 byte rtcm_vers flags
+: 2 integer refstatn Reference station ID (-1=accept any)
+
+R 83 - Double Precision XYZ Position Fix and Clock Bias Report
+: 0 double x X coordinate (m)
+: 8 double y Y coordinate (m)
+: 16 double z Z coordinate (m)
+: 24 double clock_bias Clock bias (m)
+: 32 single:double:state_sd time_of_fix GPS time or UTC (I/O timing option)
+
+R 84 - Double Precision LLA Position Fix & Clock Bias Report
+: 0 double latitude Latitude of position (+north) radians
+: 8 double longitude Longitude of position (+east) radians
+: 16 double altitude Altitude (m) 
+: 24 double clock_bias (m)
+: 32 single:double:state_sd time_of_fix GPS or UTC (seconds)
+
+R 85 - Differential Correction Status Report
+: 0 byte sv_prn Pseudorandom number of satellite (1-32)
+: 1 byte stats_code flags
+: 2 byte stn_health Health of reference station used by receiver
+: 3 byte sv_health
+: 4 byte iode1 Issue of data emphemeris for pseudo random correction
+: 5 byte iode2 Delta issue of data ephmeris
+: 6 single zcount Z count as time of week
+: 10 single prc Pseudorange correction PRC
+: 14 single rrc Range-rate correction
+: 18 single deltaprc Delta pseudorange correction
+
+R 87 00 Reference Station Control Report
+: 1 byte control flag : ref station on (1), else off (0)
+
+R 87 01 Reference Station Options Report
+: 1 byte options1
+: 2 byte options2
+
+R 87 02 Reference Station Output Version Report
+: 1 byte version RTCM version
+
+R 87 03 Reference Station Position Report
+: 1 byte type XYZ ECEF (FIXME other types.. need union/special handling)
+: 2 double x X coordinate (m)
+: 10 double y Y coordinate (m)
+: 18 double z Z coordinate (m)
+
+R 87 04 Reference Station ID Report
+: 1 integer id Reference Station ID value
+
+R 87 05 RTCM Type 16 Text Report
+: 1 byte length Number of bytes in type 16  text (up to 90)
+: 2-n byte text
+
+R 87 06 RTCM Type Specifiec Output Intervals Report
+: 1 byte type coded
+: 2 byte interval coded
+
+R 87 08 TSIP Notification of Sent Version 2 RTCM
+: 1 byte type RTCM message type sent
+: 2 integer stationid RTCM Station ID sent
+: 4 integer zcount RTCM Z-count sent
+: 6 integer deltatime GPS time at transmission minux message z-count time
+: 8 byte sequno RTCM sequence number sent
+: 9 byte length RTCM length sent
+: 10 byte health RTCM station health sent
+: 11 byte svcount Number of satellites sent in this message: 0==none
+: 12-n byte svprn PRN of satellites sent (1-32)
+
+R 87 09 Average Position - Ref Station Position Report
+: 1 byte type 0x00: XYZ Delta (fixme -- more types)
+: 2 single x delta x
+: 6 single y delta y
+: 10 single z delta z
+
+R 87 0A Time Schedule Message Interval and Offset Report
+: 1 byte type flags
+: 2 integer interval Reports time in seconds between RTCM message output
+: 4 integer offset Reports the delay of RTCM message output
+
+R 87 7D Mobile Packet Ignored by Ref Station Notification
+: 1 byte id Packet id of the ignored packet
+: 2 byte length length of the ignroed packet
+: 3 byte first The first byte of the ignored packet or 255 if none
+
+R 87 7E Ref Station Warnings Notification
+: 1 byte warning 0x00: Port A Output Language is not RTCM or not packat 0x60 or 0x61
+
+R 87 7F Ref Station Option Not Installed Notification
+: 1 byte none Fixme (there is no byte 1)
+
+R 88 00 Mobile Differential Parameters Report
+: 1 byte mode flags
+
+R 88 01 Mobile Differential Options Report
+: 1 byte options1 flags
+: 2 byte options2 flags
+
+R 88 02 Mobile Differential Input Version Report
+: 1 byte version flags
+
+R 88 03 Masking Ref Station Report
+: 1 byte type 0x00: XYZ Earth-centered, earth-fixd (ECEF) coordinates (fixme more types)
+: 2 double x meters
+: 10 double y meters
+: 18 double z meters
+
+R 88 04 Input Reference Station ID Report
+: 1 integer id Sets the reference station id: -1 accept any, else accept only this id
+
+R 88 05 Last Received RTCM Type 16 Report
+: 1 byte length No. of chars received (0-90) Fixme: 0xFF == No type 16 received
+: 2 integer id id of the ref station
+: 4 long time Z count of RTCM type 16 record converted to GPS time of week (msecs)
+: 8-n byte text received text, including zero padding, if any
+
+R 88 08 TSIP Notification of Received Version 2 RTCM Report
+: 1 byte type RTCM Message type received
+: 2 integer stnid RTCM station id
+: 4 integer zcount RTCM z count received
+: 6 integer deltatime GPS time at reception, minus message z count time
+: 8 byte seqno RTCM sequence no. received
+: 9 byte length length of RTCM message
+: 10 byte health RTCM station health
+: 11 byte svcount flags
+: 12-n byte svprn Satellite PRNs received (1-32)
+
+R 88 7F Mobile Differential Option Not Installed Notification
+: 1 byte fixme fixme -- there is no byte 1
+
+R 8B 00 Position Sigma Information Parameters
+: 1 byte enabled automatic output: 1=enabled, else 0
+: 2-5 byte reserved1 zero
+: 6 integer checksum (fixme?)
+
+R 8B 01 Position VCV Parameters Report
+: 1 byte enabled automatic output: 1=enabled, 0=disabled
+: 2-5 byte reserved1 zero
+: 6 integer checksum fixme?
+
+R 8B 02 Position Signma Information Report
+: 1 long fixtime time of position to which the data pertains in msecs since start of GPS week
+: 5 byte datavalid flag 1=invalid, else 0
+: 6 single rms Position residual root mean square
+: 10 single sigmaeast Sigma east (m)
+: 14 single sigmanorth Sigma north (m)
+: 18 single coven east-north covariance
+: 22 single sigmaup Sigma up (m)
+: 26 byte axesvalid 1=valid, else 0
+: 27 single semimajor semi-major axis (m)
+: 31 single semiminor semi-minor axis (m)
+: 35 single orientation orientation of semi-major axis from true north (radians)
+: 39 single unitvariance 
+: 43 integer epochs # of epochs for RTK (only)
+: 45 integer dof degrees of freedom
+: 47 integer flags reserved (zero)
+: 49-52 byte reserved zero
+: 53 integer checksum (fixme?)
+
+R 8B 03 Position VCV Information Report
+: 1 long fixtime Time of position in msec since start of GPS week
+: 5 byte datavalid 1=valid, else 0
+: 6 single rms position residual root mean square
+: 10 single vcv_xx VCV matrix element xx
+: 14 single vcv_xy
+: 18 single vcv_xz
+: 22 single vcv_yy
+: 26 single vcv_yz
+: 30 single vcv_zz 
+: 34 single unitvariance
+: 38 integer epochs no. of epochs (for RTK only)
+: 40 integer dof degrees of freedom
+: 42 integer flags reserved (zero)
+: 44-47 byte reserved
+: 48 integer checksum fixme?
+
+R 8D 00 Average Position Start/Stop Control Report
+: 1 byte stopcode flags
+: 2 byte status flags
+
+R 8D 01 Average Position Options Report
+: 1 byte options1
+: 2 byte options2
+
+R 8D 02 Auto Stop Parameters (Control/Options) Report
+: 1 byte type 0x00: auto stop control/options (fixme more types)
+: 2 byte options1
+: 3 byte options2
+
+R 8D 03 Current Average Position XYZ ECEF Report
+: 1 byte type 0x00: XYZ ECEF (fixme x,y,z,time may not be incuded)
+: 2 long number number of positions in the average
+: 6 long duration average duration in seconds
+: 10 double x (fixme if number==0, these fields are not included)
+: 18 double y
+: 26 double z
+: 34 long time avg time in seconds (if MSB=1, process is stopped and lower bits indicate total averaging time)
+
+R 8D 04 Average Position Delta from Last XYZ or ENU Report
+: 1 byte type 0=XYZ, 1=ENU
+: 2 long number no. of positions in the average
+: 6 long duration Averaging duration in seconds (seconds)
+: 10 single xe X or E (fixme not included if number==0)
+: 14 single yn Y or N
+: 18 single zu Z or U
+: 22 long time seconds, if MSB=1 process stopped and lower bits indicate total averaging time
+
+R 8F 20 Super Packet Output Report
+: 1 byte key 
+: 2 integer evelocity east in 0.005 m/sec increments 
+: 4 integer nvolocity north velocity in 0.005 m/sec increments
+: 6 integer uvelocity up velopcity in 0.005 m/sec increments
+: 8 long weektime gps time of the week, msecs
+: 12 long latitude 
+: 16 long longitude
+: 20 long altitude
+: 24-26 byte reserved1
+: 27 byte posfixflags
+: 28 byte svcount no. of SVs (1-8) contributing data used to compute position solution
+: 29 byte utcoffset no. of leap seconds between utc and GPS time
+: 30 integer week gps time of position solution, in weeks
+: 32 byte svprnxiode1a
+: 33 byte svprnxiode1b
+: 34 byte svprnxiode2a
+: 35 byte svprnxiode2b
+: 36 byte svprnxiode3a
+: 37 byte svprnxiode3b
+: 38 byte svprnxiode4a
+: 39 byte svprnxiode4b
+: 40 byte svprnxiode5a
+: 41 byte svprnxiode5b
+: 42 byte svprnxiode6a
+: 43 byte svprnxiode6b
+: 44 byte svprnxiode7a
+: 45 byte svprnxiode7b
+: 46 byte svprnxiode8a
+: 47 byte svprnxiode8b
+: 48 byte ionoshperic
+
+R 8F 60 DR Calibration and Status Report
+: 1 single oscalef calibrated no. of pulses per mile output by odometer
+: 5 single glscalef ratio of actual gyro scale factor to nominal gyro scale factor
+: 9 single grscalef 
+: 13 byte flag 1=digital, 2=analog
+
+R 10 - End
