@@ -1232,4 +1232,83 @@ R 8F 7B DGPS Receiver RAM Configuration Block Report
 R 8F 7C DGPS Receiver Configuration Block Acknowledgement
 1 integer checksum
 
+R 8F 7E Satellite Line-of-Sight (LOS) Message
+1 byte count Total number of bytes in packet
+2 double usertime User time of data, in seconds of the week
+10 byte chanstatus0 Status of satellite tracking channel (flags)
+11 byte chanstatus1 flags
+12 double pseudorange 
+20 single deltapseudorange
+24 single pseudorangevariance
+28 single deltapseudovariance
+32 double svxpos X Position in ECEF coordinates
+40 double svypos Y Position
+48 double svzpos Z Position
+56 single svxdelta
+60 single svydelta
+64 single svzdelta
+68 single ionoshpericcorr Ionospheric correction
+72 integer ephemura Ephemeris URA word
+74 single deltapseudoint Delta Pseudo Range Interval
+78 integer checksum
+
+R 8F 7F DGPS Receiver ROM Configuration Block
+1 byte portno Port B=0, Port A=1
+2-21 byte name Software name
+22 byte majorvers
+23 byte minorvers
+24 byte month
+25 byte day
+26 byte year Year - 1900
+27 byte head Beginning of receiver configuration block (0x55)
+28 byte version
+29-60 byte serialno
+61 byte rcvrday
+62 byte rcvrmonth
+63 integer rcvryear
+65 integer superpktopt 1=avail, else 0
+67 byte inpprotocolb flags
+68 byte outprotocolb flags
+69 byte inputbaudb flags
+70 byte outputbaudb flags
+71 byte parityb flags
+72 byte databitsb
+73 byte stopbitsb
+74 byte reserved1
+75 byte inpprotocola
+76 byte outprotocola
+77 byte inpbauda
+78 byte outbauda
+79 byte paritya
+80 byte databitsa
+81 byte stopbitsa
+82 byte reserved2
+83 byte prodid
+84 byte pvfilter 1=enabled else 0
+85 byte carrierphase 1=enabled else 0
+86 byte pps1flag 1=enabled else 0
+87 single antgain decibels
+91 byte eventflag
+92 byte beaconenb 1=enabled else 0
+93 byte maxposrate flags
+94 byte beaconattr flags
+95 byte rtcmtimeout
+96 byte scorpiodecode 1=avail else 0
+97 byte basestation flags
+98 byte everest 1=avail else 0
+99 byte modemctl 1=avail else 0
+100 byte reserved3
+101 integer desubscr D&E subscription week number
+103 byte guidance flags
+104 byte satdiffprov flags
+105 byte language flags
+106 byte hardware flags
+107 integer tnlsubsc TNL subscription week number
+109 byte dispunits 0=metric, 1=U.S.
+110 byte disstream zero
+111-150 byte reserved4
+151 integer endcode 0xAA55
+153 integer checksum1
+155 integer checksum2
+
 R 10 - End
