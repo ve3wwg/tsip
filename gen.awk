@@ -21,12 +21,12 @@ BEGIN	{
 		Next_Byte = 0
 
 		struct = "rstruct.h"
-		print "/* Response structures */" >struct
+		print "/* Response structures */\n" >struct
 		subr="decode.c"
-		print "/* Decode subroutines */" >subr
+		print "/* Decode subroutines */\n" >subr
 
 		rgen = "rgen.c"
-		print "/* Generate responses */" >rgen
+		print "/* Generate responses */\n" >rgen
 		print "#include <stdio.h>" >>rgen
 		print "#include <stdlib.h>" >>rgen
 		print "#include \"tsip.h\"" >>rgen
@@ -238,9 +238,10 @@ $1 == "R" {
 		Next_Byte = 0
 	else	Next_Byte = 1
 }
-$1 == ":" {
-	Byte = $2
-	Datatype = $3
+
+$1 ~ /^[0-9][0-9]*$/ || $1 ~ /^[0-9][0-9]*-[0-9n][0-9]*$/ {
+	Byte = $1
+	Datatype = $2
 	if ( Datatype == "byte" )
 		Datatype = "uint8_t"
 	else if ( Datatype == "integer" )
@@ -252,9 +253,9 @@ $1 == ":" {
 	else if ( Datatype == "double" )
 		Datatype = "double"
 
-	Name = $4
+	Name = $3
 	Desc = ""
-	for ( x=5; x<=NF; ++x ) {
+	for ( x=4; x<=NF; ++x ) {
 		Desc = Desc " " $x
 	}
 	Fields[Fieldx] = Byte "|" Datatype "|" Name "|" Desc
