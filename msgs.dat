@@ -1093,8 +1093,143 @@ R 8F 6F Firmware Version Name Report
 21 integer checksum
 
 R 8F 70 Beacon Channel Status Report (Obsolete)
-1 byte channels No. of beacon channels (2)
-2 integer frequency Beacon channel 0 frequency when searching
-4 byte mode flags
+1 byte channels1 No. of beacon channels (2)
+2 integer frequency1 Beacon channel 0 frequency when searching
+4 byte mode1 flags
+5 byte status1 flag
+6 byte rtcmused1 1=source of differential corrections else =0 (not)
+7 byte snr1 Beacon signal to noise ratio
+8 byte inputlevel1 Beacon channel 0 electromagnitic field intensity (0-255)
+9 byte rateindex1 flags
+10 byte lockind1 Beacon channel 0 lock signal quality
+11 byte carrieroff1 Beacon channel 0 frequency difference between transmitter and receiver oscillators
+12 byte bitrateoff1 Difference between calculated bit rate and theoritical
+13 byte worderrorrate1 No. of RTCM word errors in last 255 words on beacon channel 0
+14 byte health1 Beacon channel 0 health status
+15 integer frequency2 Beacon channel 0 frequency when searching
+17 byte mode2 flags
+18 byte status2 flag
+19 byte rtcmused2 1=source of differential corrections else =0 (not)
+20 byte snr2 Beacon signal to noise ratio
+21 byte inputlevel2 Beacon channel 0 electromagnitic field intensity (0-255)
+22 byte rateindex2 flags
+23 byte lockind2 Beacon channel 0 lock signal quality
+24 byte carrieroff2 Beacon channel 0 frequency difference between transmitter and receiver oscillators
+25 byte bitrateoff2 Difference between calculated bit rate and theoritical
+26 byte worderrorrate2 No. of RTCM word errors in last 255 words on beacon channel 0
+27 byte health2 Beacon channel 0 health status
+28 integer checksum
+
+R 81 71 DGPS Station Database Reports
+1 byte recordx Index No. of database record (0-9)
+2 integer stationid Station identification no.
+4 integer frequency Beacon frequency or 0 if satellite database is used
+6 byte modulationrate flags
+7 byte health flags
+8 single latitude Latitude of reference station (radians)
+12 single longitude Longitude (radians)
+16 single distance Computed distance to reference station (meters)
+20 single range Range of transmission (meters, beacon only)
+24 long seconds No of seconds since database record was updated
+28 byte uscgx Index of the beacon frequency used in auto range mode (USCG Index)
+29 integer checksum
+
+R 8F 73 Beacon Channel Control Acknowledgement (Obsolete)
+1 integer checksum
+
+R 8F 74 Clear Beacon Database Acknowledgement
+1 integer checksum
+
+R 8F 75 FFT Start Acknowledgement
+1 integer checksum
+
+R 8F 76 FFT Stop Acknowledgement
+1 integer checksum
+
+R 8F 77 FFT Report Packet, First Page
+1 byte pageno (FIXME -- intermediate and last pages)
+2 double frequency Center frequency of narrowband/wideband spectral plot in Hz
+10 double binsize FFT bin size in Hz
+18 byte inpsquared flags
+19 byte integrations flags
+20 integer nobins flags
+22 single maxlevel Maximum power level
+26-124 byte avgpower Averaged power sample of first to last bins of first report page
+125 integer checksum
+
+R 8F 78 RTCM Reports
+1 byte channel Channel 0/1
+2 long time Transmit time in ms since the start of the week
+6-n byte rtcmbytes Total no. of bytes (0-255) contained in the report (FIXME checksum too)
+
+R 8F 79 Beacon Station Attributes Acknowledgement
+1 integer checksum
+
+R 8F 7A Beacon Station Attibutes Report
+1-84 byte attribute flag
+85 integer checksum
+
+R 8F 7B DGPS Receiver RAM Configuration Block Report
+1 byte portno 0=Port A, 1=Port B
+2-21 byte name Software name
+22 byte majorvers
+23 byte minorvers
+24 byte month
+25 byte day
+26 byte year Year - 1900 : software release year
+27 byte head 0x55: Start of receiver config block
+28 byte verion
+29-60 byte serialno
+61 byte rcvrday
+62 byte rcvrmonth
+63 integer rcvryear 
+65 integer superpktopt 1=Superpacket available, else 0
+67 byte inputprotocolb flags
+68 byte outputprotocolb flags
+69 byte inputbaudb flags
+70 byte outputbaudb flags
+71 byte parityb flags
+72 byte databitsb 0=5..3=8
+73 byte stopbitsb 0=1, 1=2
+74 byte reserved1b
+75 byte inputprotocola flags
+76 byte outputprotocola flags
+77 byte inputbauda flags
+78 byte outputbauda flags
+79 byte paritya flags
+80 byte databitsa 0=5..3=8
+81 byte stopbitsa 0=1, 1=2
+82 byte reserved1a
+
+83 byte productid
+84 byte pvfilter flags
+85 byte carrierphase flags
+86 byte pps1flag flags
+87 single antgain decibels
+91 byte eventflag flags
+92 byte beaconenb 1=enabled, else 0
+93 byte maxposrate flags
+94 byte beaconattr flags
+95 byte rtcmtimeout seconds
+96 byte scorpiodecode 1=available, else 0
+97 byte basestation flag
+98 byte everest 1=available, else 0
+99 byte modemctl 1=available, else 0
+100 byte reserved2
+101 integer desubsc D&E subscription week no.
+103 byte guidance flags
+104 byte satdiffprov flags
+105 byte language flags
+106 byte hardware flags
+107 integer tnlsubsc TNL subscription week number
+109 byte displayunits 0=metric, 1=U.S.
+110 byte disstream zero
+111-150 byte reserved3
+151 integer endblk 0xAA55
+153 integer checksum1 of bytes 27-152
+155 integer checksum2 of bytes 0-154
+
+R 8F 7C DGPS Receiver Configuration Block Acknowledgement
+1 integer checksum
 
 R 10 - End
