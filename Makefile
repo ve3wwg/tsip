@@ -1,12 +1,22 @@
 OPTZ	= -g -O0
-OPTS	= -Wall
-CFLAGS	= $(OPTZ) $(OPTS)
+INCL	= -I/opt/local/include
+OPTS	= -Wall $(INCL)
+CFLAGS	= $(OPTZ) $(OPTS) 
+CXXFLAGS= $(OPTZ) $(OPTS) -std=c++0x
+LDFLAGS	= -L/opt/local/lib
 CC	= gcc
+CXX	= g++
 
-.c.o:
-	$(CC) -c $(CFLAGS) $< -o $*.o
+# .c.o:
+#	$(CC) -c $(CFLAGS) $< -o $*.o
 
-all:	test rgen rchk rtest
+.cpp.o:
+	$(CXX) -c $(CXXFLAGS) $< -o $*.o
+
+trimble: trimble.o ttyio.o tsip.o
+	$(CXX) trimble.o ttyio.o tsip.o -o trimble $(LDFLAGS)
+
+was:	test rgen rchk rtest
 
 test:	test.o tsip.o decode.c
 	$(CC) test.o tsip.o -o ./test 
@@ -27,11 +37,10 @@ clean:
 clobber: clean
 	rm -f a.out test tsip.dat rstruct.h decode.c rgen rchk rgen.c rchk.c
 
-tsip.o:	tsip.h
-test.o:	tsip.h
+tsip.o:	tsip.hpp
 
-decode.c: msgs.dat gen.awk
-	awk -f gen.awk msgs.dat
+# decode.c: msgs.dat gen.awk
+# 	awk -f gen.awk msgs.dat
 
-rgen.c: decode.c
-rchk.c: decode.c
+# rgen.c: decode.c
+# rchk.c: decode.c
