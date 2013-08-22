@@ -7,13 +7,15 @@
 #define TTYIO_HPP
 
 #include <stdint.h>
+#include <string.h>
+#include <stdlib.h>
 
-#include <string>
+class Packet;
 
-typedef void (*cmdcb_t)(char ch);
+typedef void (*cmdcb_t)(Packet& pkt,char ch);
 
 class Packet {
-	std::string	device;
+	const char *device;
 	enum e_state {
 		pkt_idle,
 		pkt_data,
@@ -33,25 +35,28 @@ protected:
 	enum e_gstate {
 		byte_serial,
 		byte_stdin,
-		byte_timeout
+		byte_timeout,
+		byte_eof	// EOF when fd is not a tty, at EOF
 	};
 
 	bool	ungot;		// True if we "ungot" a byte
 	uint8_t	unbyte;		// The "ungot" byte, if any
 
-	uint8_t getb(int fd);			// Read bytte with timeout
+	int getb(int fd);			// Read bytte with timeout
 	e_gstate getb(uint8_t& byte,int ms);	// Get byte with timeout
-	void putb(uint8_t byte);		// Put byte out to serial port
 	void unget(uint8_t byte);		// Put back a got byte
 
 	void putbuf(uint8_t byte);		// Put byte into buffer (if room)
 
-public:	Packet(const char *dev,int maxbuflen);
+public:	Packet();
 	~Packet();
 
+	void open(const char *dev=0,int maxbuflen=1024,int fd=-1);
 	inline void registercb(cmdcb_t usrcb) { callback = usrcb; }
 
-	void get(uint8_t **packet,int *length);
+	void putb(uint8_t byte);		// Put byte out to serial port
+
+	void get(uint8_t **packet,int *length,bool& ended);
 };
 
 #endif // TTYIO_HPP

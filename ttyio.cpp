@@ -15,14 +15,19 @@
 
 #include "ttyio.hpp"
 
-Packet::Packet(const char *dev,int maxbuflen) {
+void
+Packet::open(const char *dev,int maxbuflen,int fd) {
 	struct termios tios;
 	int rc;
 
 	if ( !dev )
 		dev = "/dev/cu.usbserial-A100MX3L";
 
+	if ( maxbuflen <= 0 )
+		maxbuflen = 1024;
+
 	buf = new uint8_t[maxbuflen+1];
+
 	maxlen = maxbuflen;
 	buflen = 0;
 	state = pkt_idle;
@@ -30,38 +35,64 @@ Packet::Packet(const char *dev,int maxbuflen) {
 	unbyte = 0;
 	tty_fd = -1;
 
+	if ( fd < 0 ) {
+		device = strdup(dev);
+		tty_fd = ::open(device,O_RDWR);
+		assert(tty_fd >= 0);
+	} else	{
+		device = 0;
+		tty_fd = fd;
+	}
 
-	tty_fd = open(device.c_str(),O_RDWR);
-	assert(tty_fd >= 0);
+	if ( isatty(tty_fd) ) {
+		rc = tcgetattr(tty_fd,&tios);
+		assert(!rc);
+		cfsetspeed(&tios,9600);
+		cfmakeraw(&tios);
 
-	rc = tcgetattr(tty_fd,&tios);
-	assert(!rc);
-	cfsetspeed(&tios,9600);
-	cfmakeraw(&tios);
-	rc = tcsetattr(tty_fd,TCSANOW,&tios);
-	assert(!rc);
+		tios.c_cflag |= PARODD | PARENB;
+		tios.c_cflag &= ~CSIZE;
+		tios.c_cflag |= CS8;
+		rc = tcsetattr(tty_fd,TCSANOW,&tios);
+		assert(!rc);
+	}
+}
+
+Packet::Packet() {
+	device = 0;
+	tty_fd = -1;
+	buf = 0;
+	buflen = 0;
+	maxlen = 0;
+	state = pkt_idle;
+	ungot = false;
+	unbyte = 0x00;
 }
 
 Packet::~Packet() {
 	close(tty_fd);
 	tty_fd = -1;
-	delete buf;
+	if ( buf )
+		delete buf;
+	buf = 0;
 }
 
 //////////////////////////////////////////////////////////////////////
 // Read a byte from fd
 //////////////////////////////////////////////////////////////////////
 
-uint8_t
+int
 Packet::getb(int fd) {
 	uint8_t byte;
 	int rc;
 
 	do	{
-		rc = read(tty_fd,&byte,1);
+		rc = read(fd,&byte,1);
+		if ( !rc )
+			return -1;		// EOF
 	} while ( rc < 0 && errno == EINTR );
 	assert(rc==1);
-	return byte;
+	return (int)byte;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -71,6 +102,7 @@ Packet::getb(int fd) {
 // 	byte_serial	- Serial byte returned
 // 	byte_stdin	- Stdin byte returned
 //	byte_timeout	- No byte (timed out)
+//	byte_eof	- EOF when not a tty and at EOF
 // 
 //////////////////////////////////////////////////////////////////////
 
@@ -95,13 +127,19 @@ Packet::getb(uint8_t& byte,int ms) {
 	fds[1].events = POLLIN;
 	fds[1].revents = 0;
 
+	if ( fds[0].fd == fds[1].fd )
+		n = 1;		// stdin is packet data in (not a tty)
+
 	do	{
 		rc = poll(fds,n,ms);
 	} while ( rc < 0 && errno == EINTR );
 
 	for ( x=0; x<n; ++x ) {
 		if ( fds[x].revents & POLLIN ) {
-			byte = getb(fds[x].fd);
+			int b = getb(fds[x].fd);
+			if ( b == -1 )
+				return byte_eof;
+			byte = (uint8_t) b & 0xFF;
 			if ( !x )
 				return byte_serial;
 			else	return byte_stdin;
@@ -142,6 +180,9 @@ Packet::putb(uint8_t byte) {
 
 void
 Packet::putbuf(uint8_t byte) {
+
+	assert(buflen > 0 || byte != 0x10);
+
 	if ( buflen >= maxlen ) {	// discard packet -- too long
 		state = pkt_idle;
 		buflen = 0;
@@ -155,12 +196,12 @@ Packet::putbuf(uint8_t byte) {
 //////////////////////////////////////////////////////////////////////
 
 void
-Packet::get(uint8_t **packet,int *length) {
+Packet::get(uint8_t **packet,int *length,bool& ended) {
 	uint8_t byte;
 	e_gstate e;
 
 	buflen = 0;
-	state = pkt_idle;
+	ended = false;
 
 	//////////////////////////////////////////////////////////////
 	// First wait for arrival of 0x10 (DLE)
@@ -168,7 +209,12 @@ Packet::get(uint8_t **packet,int *length) {
 
 	do	{
 		e = getb(byte,250);
+
 		switch ( e ) {
+		case byte_eof :
+			*length = 0;
+			ended = false;
+			return;
 		case byte_serial :
 			switch ( state ) {
 			case pkt_idle :
@@ -176,26 +222,35 @@ Packet::get(uint8_t **packet,int *length) {
 					state = pkt_data;
 				break;
 			case pkt_data :
-				if ( byte == 0x10 )
-					state = pkt_escape;
-				else	putb(byte);
+				if ( byte == 0x10 ) {
+					if ( buflen > 0 )
+						state = pkt_escape;
+				} else	{
+					putbuf(byte);
+				}
 				break;	
 			case pkt_escape :
 				if ( byte == 0x10 ) {
-					putb(byte);
+					putbuf(byte);
+					state = pkt_data;
 				} else if ( byte == 0x03 ) {
 					state = pkt_end;
+					ended = true;
 				} else	{
 					unget(byte);
-					state = pkt_end;
+					state = pkt_data;
+					*packet = buf;
+					*length = buflen;
+					return;
 				}
+				break;
 			case pkt_end :
 				assert(0);
 			}
 			break;
 		case byte_stdin :
 			if ( callback )
-				callback((char)byte);
+				callback(*this,(char)byte);
 			break;
 		case byte_timeout :
 			switch ( state ) {
@@ -214,6 +269,7 @@ Packet::get(uint8_t **packet,int *length) {
 
 	*packet = buf;
 	*length = buflen;
+	state = pkt_idle;
 }	
 
 // End ttyio.cpp
