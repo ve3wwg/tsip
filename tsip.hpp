@@ -558,6 +558,7 @@ public:	RxPacket();
 	inline uint16_t size() { return length; }
 	inline uint16_t get_offset() { return offset; }
 
+	uint16_t id();
 	bool get(uint8_t& byte);
 	uint16_t get(uint8_t *buf,uint16_t count);
 	bool get(int16_t& ival);

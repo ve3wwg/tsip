@@ -103,7 +103,7 @@ main(int argc,char **argv) {
 	int rc;
 	bool ended;
 	std::unordered_set<uint8_t> idset;
-	uint8_t id;
+	uint16_t id;
 
 	if ( argc < 2 ) {
 		pkt.open();
@@ -129,7 +129,8 @@ main(int argc,char **argv) {
 		dump(packet,pktlen,ended);
 
 		rxpkt.load(packet,pktlen);
-		rxpkt.get(id);
+		id = rxpkt.id();
+
 		switch ( id ) {
 		case 0x40 :
 			{

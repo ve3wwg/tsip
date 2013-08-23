@@ -26,6 +26,29 @@ RxPacket::load(uint8_t *buf,uint16_t buflen) {
 	offset		= 0;
 }
 
+uint16_t
+RxPacket::id() {
+	uint8_t id;
+	uint8_t sub;
+
+	if ( offset >= length )
+		return 0x10;		// No ID
+	if ( !get(id) )
+		return 0x10;
+
+	switch ( id ) {
+	case 0x5F :
+	case 0x8F :
+		if ( !get(sub) )
+			return 0x10;
+		return (uint16_t(id) << 8) | uint16_t(sub);
+		break;
+	default :
+		break;
+	}
+	return id;
+}
+
 bool
 RxPacket::get(uint8_t& byte) {
 	if ( offset >= length )
