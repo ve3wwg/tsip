@@ -57,12 +57,12 @@ struct s_R42 {
 struct s_R43 {
 	float	x_velocity;	//  Velocity of vehicle along x-axis (m/sec) 
 	float	y_velocity;	//  Velocity of vehicle along y-axis (m/sec) 
-//	float	z_velocity;	//  Velocity of vehicle along z-axis (m/sec) 
-//	float	bias_rate;	//  Bias rate in m/sec 
-//	union {			//  Time of position fix in GPS seconds 
-//	  float  time_of_fix1;
-//	  double time_of_fix2;
-//	}	u;
+	float	z_velocity;	//  Velocity of vehicle along z-axis (m/sec) 
+	float	bias_rate;	//  Bias rate in m/sec 
+	union {			//  Time of position fix in GPS seconds 
+	  float  time_of_fix1;
+	  double time_of_fix2;
+	}	u;
 };
 	
 //////////////////////////////////////////////////////////////////////
@@ -108,15 +108,15 @@ struct s_R48 {
 
 struct s_R4B {
 	uint8_t		machine_id;	//  Machine ID for receiver 
-//	union	{
-//		uint8_t	raw_status1;
-//		struct {
-//			uint8_t	reserved1          : 3;
-//			uint8_t	almanac_incomplete : 1;	// Stored almanac is not complete
-//			uint8_t	reserved2          : 4;
-//		} status1;
-//	} u1;
-//	uint8_t		status2;	// != 0 means super packets are supported
+	union	{
+		uint8_t	raw_status1;
+		struct {
+			uint8_t	reserved1          : 3;
+			uint8_t	almanac_incomplete : 1;	// Stored almanac is not complete
+			uint8_t	reserved2          : 4;
+		} status1;
+	} u1;
+	uint8_t		status2;	// != 0 means super packets are supported
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -143,6 +143,7 @@ struct s_R6D {
 	float	hdop;		//  Horizontal dilution 
 	float	vdop;		//  Vertical dilution 
 	float	tdop;		//  Time dilution 
+	uint8_t n;		//  # of entries in sv_prn[]
 	uint8_t	sv_prn[33];	//  Pseudorandom number (0-32) of first sat in view 
 };
 
@@ -157,20 +158,319 @@ enum Mode82 {
 	AutoDGPSOff	= 3
 };
 
-#if 0
 enum RtcmVers {
 	Auto		= 0,
 	Vers1Only	= 1,
 	Vers2OrPRCType9	= 2
 };
-#endif
 
 struct s_R82 {
 	Mode82	mode;		//  Manual GPS (Differential Off)
-#if 0
 	RtcmVers rtcm_vers;	//  RTCM version used to compute positionsa
 	int16_t	refstatn;	//  Reference station ID (-1=accept any) 
-#endif
+};
+
+//////////////////////////////////////////////////////////////////////
+// Response 47 : Signal Levels for All 
+//////////////////////////////////////////////////////////////////////
+
+struct s_R47 {
+	uint8_t	count;		//  Number of satellite records in packet 
+	struct	{
+		uint8_t	prn;		//  PRN number of first satellite 
+		float	siglevel;	//  Signal level of first satellite 
+	} sat[12];
+};
+
+//////////////////////////////////////////////////////////////////////
+// Response 49 : Almanac Health Page 
+//////////////////////////////////////////////////////////////////////
+
+struct s_R49 {
+	uint8_t health[32];	//  0 == healthy, else flags 
+};
+
+//////////////////////////////////////////////////////////////////////
+//  Response 4A : Single-Precision LLA Position Fix 
+//////////////////////////////////////////////////////////////////////
+
+struct s_R4A {
+	float	latitude;	//  Latitude used on position solution computation + for North, - for South 
+	float	longitude;	//  Longitude used on the position solution computation + for East, - for West 
+	float	altitude;	//  Altitude used in position solution 
+	float	clock_bias;	//  Clock bias 
+	union {			//  Time of fix (seconds) 
+	  float	time_of_fix1;
+	  double	time_of_fix2;
+	}	u;
+};
+
+//////////////////////////////////////////////////////////////////////
+// Response 4C : Operating Parameters 
+//////////////////////////////////////////////////////////////////////
+
+struct s_R4C {
+	uint8_t	dynamics_code;	//  Reports the expected vehicle dynamics and is used to assist solution (default 1=Land) 
+	float	elevation_mask;	//  Reports lowest angle at which the receiver can use a satellite (radians) 
+	float	signal_level_mask; //  Reports the minimum signal level for fixes (AMUs) 
+	float	pdop_mask;	//  Maximum PDOP for calculating position fixes 
+	float	podp_switch;	//  Influences 2D or 3D fix depending on PDOP 
+};
+
+//////////////////////////////////////////////////////////////////////
+// Response 4D : Oscillator Offset 
+//////////////////////////////////////////////////////////////////////
+
+struct s_R4D {
+	float	offset;	//  GPS oscillator offset in Hz 
+};
+
+//////////////////////////////////////////////////////////////////////
+// Response 4E : GPS Time Command 
+//////////////////////////////////////////////////////////////////////
+
+struct s_R4E {
+	uint8_t	yn;	//  Returns 'Y' or 'N' 
+};
+
+//////////////////////////////////////////////////////////////////////
+// Response 4F : UTC Parameters 
+//////////////////////////////////////////////////////////////////////
+
+struct s_R4F {
+	double	a0;		//  Refer to ICD-GPS-200 specification 
+	float	a1;
+	int16_t	delta_t_ls;
+	float	tot;
+	int16_t	wn_t;
+	int16_t	wn_lsf;
+	int16_t	dn;
+	int16_t	delta_t_lsf;
+};
+
+//////////////////////////////////////////////////////////////////////
+// Response 54 : One Satellite Bias and Bias Rate 
+//////////////////////////////////////////////////////////////////////
+
+struct s_R54 {
+	float	bias;		//  One satellite bias (meters) 
+	float	bias_rate;	//  Click bias rate (m/sec) 
+	union {			//  Time of position fix in GPS seconds 
+	  float	time_of_fix1;
+	  double	time_of_fix2;
+	}	u;
+};
+
+//////////////////////////////////////////////////////////////////////
+// Response 55 : I/O Options 
+//////////////////////////////////////////////////////////////////////
+
+struct s_R55 {
+	uint8_t	position;	//  Position flags 
+	uint8_t	velocity;	//  Flags 
+	uint8_t	timing;		//  Flags 
+	uint8_t	auxiliary;	//  Flags 
+};
+
+//////////////////////////////////////////////////////////////////////
+// Response 56 : Velocity Fix East-North (ENU) 
+//////////////////////////////////////////////////////////////////////
+
+struct s_R56 {
+	float	eastvel;	//  East velocity + for east, - for west (m/sec) 
+	float	northvel;	//  North velocity + for north, - for south (m/sec) 
+	float	upvel;		//  Up velocity + for up, - for down 
+	float	clock_bias_rate; //  Clock bias rate (m/sec) 
+	union {			//  Time when fix computed (seconds) 
+	  float	time_of_fix1;
+	  double time_of_fix2;
+	}	u;
+};
+
+//////////////////////////////////////////////////////////////////////
+// Response 57 : Last Computed Fix 
+//////////////////////////////////////////////////////////////////////
+
+struct s_R57 {
+	uint8_t	info_src;	//  Source of info (flags) 
+	uint8_t	diag_code;	//  Manufacturers diagnostic code 
+	float	fix_time;	//  Time of last position fix in GPS seconds 
+	int16_t	fix_week;	//  Week of last position fix, in GPS weeks 
+};
+
+//////////////////////////////////////////////////////////////////////
+// Response 58 : Satellte Sytem Data 
+//////////////////////////////////////////////////////////////////////
+
+struct s_R58 {
+	enum Type	{
+		NotUsed		= 1,
+		Almanac		= 2,
+		Health		= 3,
+		Ionosphere	= 4,
+		UTC		= 5,
+		Ephemeris	= 6
+	};
+
+	uint8_t	operation;	//  Type of satellite operation (flags) 
+	Type	datatype;	//  Type of satellite information included (flags) 
+	uint8_t	sv_prn;		//  Satellite information in the rpt is for all satellites (0) or specific 
+	uint8_t	n;		//  Length of satellite data 
+	union	{
+		struct s_almanac {
+			uint8_t	t_oa_raw;
+			uint8_t	sv_health;
+			float	e;
+			float	t_oa;
+			float	i_o;
+			float	omegadot;
+			float	sqrt_a;
+			float	omega_0;
+			float	omega;
+			float	m_0;
+			float	a_f0;
+			float	a_f1;
+			float	axis;
+			float	n;
+			float	omega_n;
+			float	odot_n;
+			float	t_zc;
+			int16_t	weeknum;
+			int16_t	wn_oa;
+		} s2;
+		struct s_health {
+			uint8_t	weekno;
+			uint8_t	sv_health[32];
+			uint8_t	t_oa;
+			uint8_t	cur_t_oa;
+			int16_t	cur_weekno;
+		} s3;
+		struct s_ionosphere {
+			uint8_t	compressed[8];
+			float	alpha_0;
+			float	alpha_1;
+			float	alpha_2;
+			float	alpha_3;
+			float	beta_0;
+			float	beta_1;
+			float	beta_2;
+			float	beta_3;
+		} s4;
+		struct s_utc {
+			uint8_t	compressed[13];
+			double	a_0;
+			float	a_1;
+			int16_t	delta_t_ls;
+			float	t_ot;
+			int16_t	wn_t;
+			int16_t	wn_lsf;
+			int16_t	dn;
+			int16_t	delta_t_lsf;
+		} s5;
+		struct s_ephemeris {
+			uint8_t	sv_prn;
+			float	t_ephem;
+			int16_t	weekno;
+			uint8_t	codel2;
+			uint8_t	l2pdata;
+			uint8_t	svacc_raw;
+			uint8_t	sv_health;
+			int16_t	iodc;
+			float	t_gd;
+			float	t_oc;
+			float	a_f2;
+			float	a_f1;
+			float	a_f0;
+			float	svacc;
+			uint8_t	iode;
+			uint8_t	fit_ival;
+			float	c_rs;
+			float	delta_n;
+			double	m_0;
+			float	c_uc;
+			double	e;
+			float	c_us;
+			double	sqrt_a;
+			float	t_oe;
+			float	c_ic;
+			double	omega_0;
+			float	c_is;
+			double 	i_o;
+			float	c_rc;
+			double	omega;
+			float	omegadot;
+			float	idot;
+			double	axis;
+			double	n;
+			double	r1me2;
+			double	omega_n;
+			double	odot_n;
+		} s6;
+	} u;
+};
+
+//////////////////////////////////////////////////////////////////////
+// Response 59 : Satellite Attribute Database Status 
+//////////////////////////////////////////////////////////////////////
+
+struct s_R59 {
+	uint8_t	operation;	//  0x03:1-32 is enable/disable; 0x06:1-32 heed/ignore 
+	uint8_t	sv_flags[32];	//  flags 
+};
+
+//////////////////////////////////////////////////////////////////////
+// Response 5A : Raw Measurement Data 
+//////////////////////////////////////////////////////////////////////
+
+struct s_R5A {
+	uint8_t	sv_prn;		//  Satellite pseudorandom number (1-32) 
+	float	samplength;	//  Time elapsing while a measurement is averaged (msec) 
+	float	siglevel;	//  Approx of C/N0, in AMU's. 
+	float	code_phase;	//  Average Coarse/Acquisition code delay 
+	float	doppler;	//  Apparent carrier frequency offset (Hz) 
+	double	time;		//  Center of the sample interval (sconds) 
+};
+
+//////////////////////////////////////////////////////////////////////
+// Response 5F 11 - EEPROM Segment Status Reports
+//////////////////////////////////////////////////////////////////////
+
+struct s_R5F11 {
+	int16_t status;
+};
+
+//////////////////////////////////////////////////////////////////////
+// Response 5C : Satellite Tracking Status 
+//////////////////////////////////////////////////////////////////////
+
+struct s_R5C {
+	uint8_t	sv_prn;		//  Pseudorandom number of sat. 
+	uint8_t	chan_slot;	//  Channel and slot code 
+	uint8_t	aquisflag;	//  Aquisition flag 
+	uint8_t	ephemflag;	//  Ephemeris flag 
+	float	siglevel;	//  Signal level (Same as 0x5A) 
+	float	gps_time;	//  GPS Time of last measurement 
+	float	elevation;	//  Approximate elevation of sat above horiz (radians) 
+	float	azimuth;	//  Approximate azimut from true north (radians) 
+	uint8_t	oldmeas;	//  Old measurement flat 
+	uint8_t	intmsec;	//  Status of the integer millisecond range to spec. sat. 
+	uint8_t	baddata;	//  Bad data flag (or zero) 
+	uint8_t	datacol;	//  Data collect flag (0=not collecting) 
+};
+
+//////////////////////////////////////////////////////////////////////
+// Response 83 : Double Precision XYZ Position Fix and Clock Bias 
+//////////////////////////////////////////////////////////////////////
+
+struct s_R83 {
+	double	x;		//  X coordinate (m) 
+	double	y;		//  Y coordinate (m) 
+	double	z;		//  Z coordinate (m) 
+	double	clock_bias;	//  Clock bias (m) 
+	union {			//  GPS time or UTC (I/O timing option) 
+	  float	time_of_fix1;
+	  double time_of_fix2;
+	}	u;
 };
 
 //////////////////////////////////////////////////////////////////////
@@ -200,11 +500,28 @@ public:	RxPacket();
 	bool get(s_R42& recd);
 	bool get(s_R43& recd);
 	bool get(s_R46& recd);
+	bool get(s_R47& recd);
 	bool get(s_R48& recd);
+	bool get(s_R49& recd);
+	bool get(s_R4A& recd);
 	bool get(s_R4B& recd);
+	bool get(s_R4C& recd);
+	bool get(s_R4D& recd);
+	bool get(s_R4E& recd);
+	bool get(s_R4F& recd);
+	bool get(s_R54& recd);
+	bool get(s_R55& recd);
+	bool get(s_R56& recd);
+	bool get(s_R57& recd);
+	bool get(s_R58& recd);
+	bool get(s_R59& recd);
+	bool get(s_R5A& recd);
 	bool get(s_R5B& recd);
+	bool get(s_R5C& recd);
+	bool get(s_R5F11& recd);
 	bool get(s_R6D& recd);
 	bool get(s_R82& recd);
+	bool get(s_R83& recd);
 
 	inline void set_precision(bool dprecision) { state_sd = dprecision; }
 	inline bool is_double() { return state_sd; }
@@ -299,215 +616,11 @@ struct s_R45 {
 	int16_t	Checksum;	//  of bytes 20-93 
 };
 	
-// Response 47 : Signal Levels for All 
-struct s_R47 {
-	uint8_t	count;	//  Number of satellite records in packet 
-	uint8_t	sat1;	//  PRN number of first satellite 
-	float	signal_lev1;	//  Signal level of first satellite 
-	uint8_t	sat2;	//  PRN number 
-	float	signal_lev2;	//  Signal level 
-	uint8_t	sat3;	//  PRN number 
-	float	signal_lev3;	//  Signal level 
-	uint8_t	sat4;	//  PRN number 
-	float	signal_lev4;	//  Signal level 
-	uint8_t	sat5;	//  PRN number 
-	float	signal_lev5;	//  Signal level 
-	uint8_t	sat6;	//  PRN number 
-	float	signal_lev6;	//  Signal level 
-	uint8_t	sat7;	//  PRN number 
-	float	signal_lev7;	//  Signal level 
-	uint8_t	sat8;	//  PRN number 
-	float	signal_lev8;	//  Signal level 
-	uint8_t	sat9;	//  PRN number 
-	float	signal_lev9;	//  Signal level 
-	uint8_t	sat10;	//  PRN number 
-	float	signal_lev10;	//  Signal level 
-	uint8_t	sat11;	//  PRN number 
-	float	signal_lev11;	//  Signal level 
-	uint8_t	sat12;	//  PRN number 
-	float	signal_lev12;	//  Signal level 
-};
-	
-// Response 49 : Almanac Health Page 
-struct s_R49 {
-	uint8_t	health1;	//  0 == healthy, else flags 
-	uint8_t	health2;	//  etc. 
-	uint8_t	health3;
-	uint8_t	health4;
-	uint8_t	health5;
-	uint8_t	health6;
-	uint8_t	health7;
-	uint8_t	health8;
-	uint8_t	health9;
-	uint8_t	health10;
-	uint8_t	health11;
-	uint8_t	health12;
-	uint8_t	health13;
-	uint8_t	health14;
-	uint8_t	health15;
-	uint8_t	health16;
-	uint8_t	health17;
-	uint8_t	health18;
-	uint8_t	health19;
-	uint8_t	health20;
-	uint8_t	health21;
-	uint8_t	health22;
-	uint8_t	health23;
-	uint8_t	health24;
-	uint8_t	health25;
-	uint8_t	health26;
-	uint8_t	health27;
-	uint8_t	health28;
-	uint8_t	health29;
-	uint8_t	health30;
-	uint8_t	health31;
-	uint8_t	health32;
-};
-	
-// Response 4A : Single-Precision LLA Position Fix 
-struct s_R4A {
-	float	latitude;	//  Latitude used on position solution computation + for North, - for South 
-	float	longitude;	//  Longitude used on the position solution computation + for East, - for West 
-	float	altitude;	//  Altitude used in position solution 
-	float	clock_bias;	//  Clock bias 
-	union {		//  Time of fix (seconds) 
-	  float	time_of_fix1;
-	  double	time_of_fix2;
-	}	u;
-};
-
-// Response 4C : Operating Parameters 
-struct s_R4C {
-	uint8_t	dynamics_code;	//  Reports the expected vehicle dynamics and is used to assist solution (default 1=Land) 
-	float	elevation_mask;	//  Reports lowest angle at which the receiver can use a satellite (radians) 
-	float	signal_level_mask;	//  Reports the minimum signal level for fixes (AMUs) 
-	float	pdop_mask;	//  Maximum PDOP for calculating position fixes 
-	float	podp_switch;	//  Influences 2D or 3D fix depending on PDOP 
-};
-
-// Response 4D : Oscillator Offset 
-struct s_R4D {
-	float	offset;	//  GPS oscillator offset in Hz 
-};
-
-// Response 4E : GPS Time COmmand 
-struct s_R4E {
-	uint8_t	yn;	//  Returns 'Y' or 'N' 
-};
-
-// Response 4F : UTC Parameters 
-struct s_R4F {
-	double	a0;	//  Refer to ICD-GPS-200 specification 
-	float	a1;
-	int16_t	delta_t_ls;
-	float	tot;
-	int16_t	wn_t;
-	int16_t	wn_lsf;
-	int16_t	dn;
-	int16_t	delta_t_lsf;
-};
-
-// Response 53 : Analog-to-Digital Readings 
-struct s_R53 {
-	float	receiver;	//  temperature 
-	float	reserved1;	//  set to zero 
-	float	reserved2;	//  set to sero 
-	float	voltage;	//  of antenna DC power supply/AGC (volts) 
-	float	supplyv;	//  Battery/Power supply voltage (volts) 
-	float	Antenna;	//  current in Amps * 10.34 
-	float	pwr25;	//  +2.5V (nominal) power 
-	float	pwr50;	//  +5.0V (nominal) power 
-};
-
-// Response 54 : One Satellite Bias and Bias Rate 
-struct s_R54 {
-	float	bias;	//  One satellite bias (meters) 
-	float	bias_rate;	//  Click bias rate (m/sec) 
-	union {		//  Time of position fix in GPS seconds 
-	  float	time_of_fix1;
-	  double	time_of_fix2;
-	}	u;
-};
-
-// Response 55 : I/O Options 
-struct s_R55 {
-	uint8_t	position;	//  Position flags 
-	uint8_t	velocity;	//  Flags 
-	uint8_t	timing;	//  Flags 
-	uint8_t	auxiliary;	//  Flags 
-};
-
-// Response 56 : Velocity Fix East-North (ENU) 
-struct s_R56 {
-	float	eastvel;	//  East velocity + for east, - for west (m/sec) 
-	float	northvel;	//  North velocity + for north, - for south (m/sec) 
-	float	upvel;	//  Up velocity + for up, - for down 
-	float	clock_bias_rate;	//  Clock bias rate (m/sec) 
-	union {		//  Time when fix computed (seconds) 
-	  float	time_of_fix1;
-	  double	time_of_fix2;
-	}	u;
-};
-
-// Response 57 : Last Computed Fix 
-struct s_R57 {
-	uint8_t	info_src;	//  Source of info (flags) 
-	uint8_t	diag_code;	//  Manufacturers diagnostic code 
-	float	fix_time;	//  Time of last position fix in GPS seconds 
-	int16_t	fix_week;	//  Week of last position fix, in GPS weeks 
-};
-
-// Response 58 : Satellte Sytem Data 
-struct s_R58 {
-	uint8_t	operation;	//  Type of satellite operation (flags) 
-	uint8_t	datatype;	//  Type of satellite information included (flags) 
-	uint8_t	sv_prn;	//  Satellite information in the rpt is for all satellites (0) or specific 
-	uint8_t	n;	//  Length of satellite data 
-	uint8_t	satdata[249];	//  content depends upon datatype 
-};
-
-// Response 59 : Satellite Attribute Database Status 
-struct s_R59 {
-	uint8_t	operation;	//  0x03:1-32 is enable/disable; 0x06:1-32 heed/ignore 
-	uint8_t	sv_flags[32];	//  flags 
-};
-
-// Response 5A : Raw Measurement Data 
-struct s_R5A {
-	uint8_t	sv_prn;	//  Satellite pseudorandom number (1-32) 
-	float	samplength;	//  Time elapsing while a measurement is averaged (msec) 
-	float	siglevel;	//  Approx of C/N0, in AMU's. 
-	float	code_phase;	//  Average Coarse/Acquisition code delay 
-	float	doppler;	//  Apparent carrier frequency offset (Hz) 
-	double	time;	//  Center of the sample interval (sconds) 
-};
-
-// Response 5C : Satellite Tracking Status 
-struct s_R5C {
-	uint8_t	sv_prn;	//  Pseudorandom number of sat. 
-	uint8_t	chan_slot;	//  Channel and slot code 
-	uint8_t	aquisflag;	//  Aquisition flag 
-	uint8_t	ephemflag;	//  Ephemeris flag 
-	float	siglevel;	//  Signal level (Same as 0x5A) 
-	float	gps_time;	//  GPS Time of last measurement 
-	float	elevation;	//  Approximate elevation of sat above horiz (radians) 
-	float	azimuth;	//  Approximate azimut from true north (radians) 
-	uint8_t	oldmeas;	//  Old measurement flat 
-	uint8_t	intmsec;	//  Status of the integer millisecond range to spec. sat. 
-	uint8_t	baddata;	//  Bad data flag (or zero) 
-	uint8_t	datacol;	//  Data collect flag (0=not collecting) 
-};
 
 // Response 5E : Additional Fix Status 
 struct s_R5E {
 	uint8_t	prevmeas;	//  Measurements used in current fix used in the previous fix/status 
 	uint8_t	oldmeas;	//  Number of old measurements in current fix (2-3s) 
-};
-
-// Response 5F : Severe Failure 
-struct s_R5F {
-	uint8_t	hex0x02;	//  Hex 0x02 
-	uint8_t	message[255];	//  ASCII text message 
 };
 
 // Response 60 : Differential GPS Pseudorange Corrections 
@@ -807,18 +920,6 @@ struct s_R7D09 {
 	uint8_t	interval;	//  interval code 
 	uint8_t	reserved[8];
 	int16_t	checksum;
-};
-
-// Response 83 : Double Precision XYZ Position Fix and Clock Bias 
-struct s_R83 {
-	double	x;	//  X coordinate (m) 
-	double	y;	//  Y coordinate (m) 
-	double	z;	//  Z coordinate (m) 
-	double	clock_bias;	//  Clock bias (m) 
-	union {		//  GPS time or UTC (I/O timing option) 
-	  float	time_of_fix1;
-	  double	time_of_fix2;
-	}	u;
 };
 
 // Response 84 : Double Precision LLA Position Fix & Clock Bias 

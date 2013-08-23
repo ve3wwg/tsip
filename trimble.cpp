@@ -126,7 +126,6 @@ main(int argc,char **argv) {
 			puts("<EOF>");
 			break;
 		}
-		idset.insert(packet[0]);
 		dump(packet,pktlen,ended);
 
 		rxpkt.load(packet,pktlen);
@@ -136,7 +135,7 @@ main(int argc,char **argv) {
 			{
 				s_R40 r;
 				if ( !rxpkt.get(r) ) {
-					puts(" ERR");
+					printf(" ERR %d\n",rxpkt.get_offset());
 				} else	{
 					printf("  satellite = %u\n",r.satellite);
 					printf("  t_zc      = %f\n",r.t_zc);
@@ -156,7 +155,7 @@ main(int argc,char **argv) {
 			{
 				s_R41 r;
 				if ( !rxpkt.get(r) ) {
-					puts(" ERR");
+					printf(" ERR %d\n",rxpkt.get_offset());
 				} else	{
 					printf("  time      = %f\n",r.time);
 					printf("  week      = %d\n",r.week);
@@ -194,7 +193,7 @@ main(int argc,char **argv) {
 			{
 				s_R46 r;
 				if ( !rxpkt.get(r) ) {
-					puts(" ERR");
+					printf(" ERR %d\n",rxpkt.get_offset());
 				} else	{
 					printf("  status = %d\n",int(r.status));
 					printf("  error_code = %02X\n",r.u.error_code);
@@ -208,7 +207,7 @@ main(int argc,char **argv) {
 			{
 				s_R48 r;
 				if ( !rxpkt.get(r) ) {
-					puts(" ERR");
+					printf(" ERR %d\n",rxpkt.get_offset());
 				} else	{
 				}
 			}
@@ -217,7 +216,7 @@ main(int argc,char **argv) {
 			{
 				s_R4B r;
 				if ( !rxpkt.get(r) ) {
-					puts(" ERR");
+					printf(" ERR %d\n",rxpkt.get_offset());
 				} else	{
 					printf("  machine_id = %02X\n",r.machine_id);
 				}
@@ -227,8 +226,15 @@ main(int argc,char **argv) {
 			{
 				s_R5B r;
 				if ( !rxpkt.get(r) ) {
-					puts(" ERR");
+					printf(" ERR %d\n",rxpkt.get_offset());
 				} else	{
+					printf("  sv_prn        = %02X\n",r.sv_prn);
+					printf("  coltime       = %f\n",r.coltime);
+					printf("  health        = %02X\n",r.health);
+					printf("  iode          = %02X\n",r.iode);
+					printf("  t_oe          = %f secs\n",r.t_oe);
+					printf("  fit_ival_flag = %02X\n",r.fit_ival_flag);
+					printf("  ura           = %f m\n",r.ura);
 				}
 			}
 			break;
@@ -236,8 +242,16 @@ main(int argc,char **argv) {
 			{
 				s_R6D r;
 				if ( !rxpkt.get(r) ) {
-					puts(" ERR");
+					printf(" ERR %d\n",rxpkt.get_offset());
 				} else	{
+					printf("  fixmod = %02X\n",r.fixmode);
+					printf("  PDOP   = %f\n",r.pdop);
+					printf("  HDOP   = %f\n",r.hdop);
+					printf("  VDOP   = %f\n",r.vdop);
+					printf("  TDOP   = %f\n",r.tdop);
+					for ( uint8_t ux=0; ux<r.n; ++ux ) {
+						printf("  SVPRN[%u] = %02X\n",ux,r.sv_prn[ux]);
+					}
 				}
 			}
 			break;
@@ -245,13 +259,14 @@ main(int argc,char **argv) {
 			{
 				s_R82 r;
 				if ( !rxpkt.get(r) ) {
-					puts(" ERR");
+					printf(" ERR %d\n",rxpkt.get_offset());
 				} else	{
 					printf("  mode      = %d\n",r.mode);
 				}
 			}
 			break;
 		default :
+			idset.insert(packet[0]);
 			puts(" ???");
 		}
 	}
@@ -260,7 +275,7 @@ main(int argc,char **argv) {
 	// Display all IDs encountered
 	//////////////////////////////////////////////////////////////
 
-	puts("\nIDs Encountered:");
+	puts("\nUnknown IDs Encountered:");
 
 	for ( auto it=idset.begin(); it != idset.end(); ++it ) {
 		uint8_t id = *it;

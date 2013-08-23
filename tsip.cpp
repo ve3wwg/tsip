@@ -173,19 +173,17 @@ RxPacket::get(s_R43& recd) {
 		return false;
 	if ( !get(recd.y_velocity) )
 		return false;
-#if 0
 	if ( !get(recd.z_velocity) )
-		return false;
+		recd.z_velocity = 0.0;
 	if ( !get(recd.bias_rate) )
-		return false;
+		recd.bias_rate = 0.0;
 	if ( state_sd ) {
 		if ( !get(recd.u.time_of_fix1) )
-			return false;
+			recd.u.time_of_fix1 = 0.0;
 	} else	{
 		if ( !get(recd.u.time_of_fix2) )
-			return false;
+			recd.u.time_of_fix2 = 0.0;
 	}
-#endif
 	return true;
 }
 
@@ -212,16 +210,93 @@ RxPacket::get(s_R48& recd) {
 }
 
 bool
+RxPacket::get(s_R49& recd) {
+	uint16_t dlen;
+
+	dlen = get(&recd.health[0],32);
+	for ( ; dlen < 32; ++dlen )
+		recd.health[dlen] = 0;
+	return true;
+}
+
+bool
+RxPacket::get(s_R4A& recd) {
+
+	if ( !get(recd.latitude) )
+		return false;
+	if ( !get(recd.longitude) )
+		return false;
+	if ( !get(recd.altitude) )
+		recd.altitude = 0;
+	if ( !get(recd.clock_bias) )
+		recd.clock_bias = 0;
+
+	if ( state_sd ) {
+		if ( !get(recd.u.time_of_fix1) )
+			recd.u.time_of_fix1 = 0.0;
+	} else	{
+		if ( !get(recd.u.time_of_fix2) )
+			recd.u.time_of_fix2 = 0.0;
+	}
+	return true;
+}
+
+bool
 RxPacket::get(s_R4B& recd) {
 
 	if ( !get(recd.machine_id) )
 		return false;
-#if 0
 	if ( !get(recd.u1.raw_status1) )
-		return false;
+		recd.u1.raw_status1 = 0;
 	if ( !get(recd.status2) )
+		recd.status2 = 0;
+	return true;
+}
+
+bool
+RxPacket::get(s_R4C& recd) {
+
+	if ( !get(recd.dynamics_code) )
 		return false;
-#endif
+	if ( !get(recd.elevation_mask) )
+		return false;
+	if ( !get(recd.signal_level_mask) )
+		return false;
+	if ( !get(recd.pdop_mask) )
+		return false;		
+	if ( !get(recd.podp_switch) )
+		return false;
+	return 0;
+}
+
+bool
+RxPacket::get(s_R59& recd) {
+	uint8_t n;
+
+	if ( !get(recd.operation) )
+		return false;
+
+	n = get(recd.sv_flags,sizeof recd.sv_flags);
+	for ( ; n < sizeof recd.sv_flags; ++n )
+		recd.sv_flags[n] = 0;
+	return true;
+}
+
+bool
+RxPacket::get(s_R5A& recd) {
+
+	if ( !get(recd.sv_prn) )
+		return false;
+	if ( !get(recd.samplength) )
+		return false;
+	if ( !get(recd.siglevel) )
+		return false;
+	if ( !get(recd.code_phase) )
+		return false;
+	if ( !get(recd.doppler) )
+		return false;
+	if ( !get(recd.time) )
+		return false;
 	return true;
 }
 
@@ -236,18 +311,16 @@ RxPacket::get(s_R5B& recd) {
 	if ( !get(recd.iode) )
 		return false;
 	if ( !get(recd.t_oe) )
-		return false;
+		recd.t_oe = 0.0;
 	if ( !get(recd.fit_ival_flag) )
-		return false;
+		recd.fit_ival_flag = 0;
 	if ( !get(recd.ura) )
-		return false;
+		recd.ura = 0.0;
 	return true;
 }
 
 bool
 RxPacket::get(s_R6D& recd) {
-	uint16_t blen;
-
 	if ( !get(recd.fixmode) )
 		return false;
 	if ( !get(recd.pdop) )
@@ -260,10 +333,7 @@ RxPacket::get(s_R6D& recd) {
 		return false;
 
 	memset(recd.sv_prn,0,sizeof recd.sv_prn);
-	blen = get(recd.sv_prn,sizeof recd.sv_prn);
-	if ( blen < sizeof recd.sv_prn )
-		return false;
-
+	recd.n = get(recd.sv_prn,sizeof recd.sv_prn);
 	return true;
 }
 
@@ -274,15 +344,368 @@ RxPacket::get(s_R82& recd) {
 	if ( !get(b) )
 		return false;
 	recd.mode = Mode82(b);
-#if 0
-	if ( !get(b) )
-		return false;
-	recd.rtcm_vers = RtcmVers(b);
+
+	if ( get(b) )
+		recd.rtcm_vers = RtcmVers(b);
+	else	recd.rtcm_vers = RtcmVers(0);
+
 	if ( !get(recd.refstatn) )
-		return false;
-#endif
+		recd.refstatn = 0;
+
 	return true;
 }
+
+bool
+RxPacket::get(s_R47& recd) {
+
+	if ( !get(recd.count) )
+		return false;
+
+	for ( uint16_t x=0; x<recd.count && x < 12; ++x ) {
+		if ( !get(recd.sat[x].prn) || !get(recd.sat[x].siglevel) ) {
+			recd.count = x;
+			return false;
+		}
+	}
+	return true;
+}
+
+bool
+RxPacket::get(s_R4D& recd) {
+	return get(recd.offset);
+}
+
+bool
+RxPacket::get(s_R4E& recd) {
+	return get(recd.yn);
+}
+
+
+bool
+RxPacket::get(s_R4F& recd) {
+
+	if ( !get(recd.a0) )
+		return false;
+	if ( !get(recd.a1) )
+		return false;
+	if ( !get(recd.delta_t_ls) )
+		return false;
+	if ( !get(recd.tot) )
+		return false;
+	if ( !get(recd.wn_t) )
+		return false;
+	if ( !get(recd.wn_lsf) )
+		return false;
+	if ( !get(recd.dn) )
+		return false;
+	if ( !get(recd.delta_t_lsf) )
+		return false;
+	return true;
+}
+
+bool
+RxPacket::get(s_R54& recd) {
+
+	if ( !get(recd.bias) )
+		return false;
+	if ( !get(recd.bias_rate) )
+		return false;
+	if ( state_sd ) {
+		if ( !get(recd.u.time_of_fix1) )
+			return false;
+	} else	{
+		if ( !get(recd.u.time_of_fix2) )
+			return false;
+	}
+	return true;
+}
+
+bool
+RxPacket::get(s_R55& recd) {
+
+	if ( !get(recd.position) )
+		return false;
+	if ( !get(recd.velocity) )
+		return false;
+	if ( !get(recd.timing) )
+		return false;
+	if ( !get(recd.auxiliary) )
+		return false;
+	return true;
+}
+
+bool
+RxPacket::get(s_R57& recd) {
+
+	if ( !get(recd.info_src) )
+		return false;
+	if ( !get(recd.diag_code) )
+		return false;
+	if ( !get(recd.fix_time) )
+		return false;
+	if ( !get(recd.fix_week) )
+		return false;
+	return true;
+}
+
+bool
+RxPacket::get(s_R58& recd) {
+	uint8_t typ;
+
+	if ( !get(recd.operation) )
+		return false;
+	if ( !get(typ) )
+		return false;
+	recd.datatype = s_R58::Type(typ);
+	if ( !get(recd.sv_prn) )
+		return false;
+	if ( !get(recd.n) )
+		return false;
+
+	switch ( recd.datatype ) {
+	case s_R58::NotUsed :
+		break;
+	case s_R58::Almanac :
+		for ( uint8_t x=0; x<recd.n; ++x ) {
+			if ( !get(recd.u.s2.t_oa_raw) )
+				return false;
+			if ( !get(recd.u.s2.sv_health) )
+				return false;
+			if ( !get(recd.u.s2.e) )
+				return false;
+			if ( !get(recd.u.s2.t_oa) )
+				return false;
+			if ( !get(recd.u.s2.i_o) )
+				return false;
+			if ( !get(recd.u.s2.omegadot) )
+				return false;
+			if ( !get(recd.u.s2.sqrt_a) )
+				return false;
+			if ( !get(recd.u.s2.omega_0) )
+				return false;
+			if ( !get(recd.u.s2.omega) )
+				return false;
+			if ( !get(recd.u.s2.m_0) )
+				return false;
+			if ( !get(recd.u.s2.a_f0) )
+				return false;
+			if ( !get(recd.u.s2.a_f1) )
+				return false;
+			if ( !get(recd.u.s2.axis) )
+				return false;
+			if ( !get(recd.u.s2.n) )
+				return false;
+			if ( !get(recd.u.s2.omega_n) )
+				return false;
+			if ( !get(recd.u.s2.odot_n) )
+				return false;
+			if ( !get(recd.u.s2.t_zc) )
+				return false;
+			if ( !get(recd.u.s2.weeknum) )
+				return false;
+			if ( !get(recd.u.s2.wn_oa) )
+				return false;
+		}
+		break;
+	case s_R58::Health :
+		for ( uint8_t x=0; x<recd.n; ++x ) {
+			if ( !get(recd.u.s3.weekno) )
+				return false;
+			if ( get(recd.u.s3.sv_health,32) != 32 )
+				return false;
+			if ( !get(recd.u.s3.t_oa) )
+				return false;
+			if ( !get(recd.u.s3.cur_t_oa) )
+				return false;
+			if ( !get(recd.u.s3.cur_weekno) )
+				return false;
+		}
+		break;
+	case s_R58::Ionosphere :
+		for ( uint8_t x=0; x<recd.n; ++x ) {
+			if ( get(recd.u.s4.compressed,8) != 8 )
+				return false;
+			if ( !get(recd.u.s4.alpha_0) )
+				return false;
+			if ( !get(recd.u.s4.alpha_1) )
+				return false;
+			if ( !get(recd.u.s4.alpha_2) )
+				return false;
+			if ( !get(recd.u.s4.alpha_3) )
+				return false;
+			if ( !get(recd.u.s4.beta_0) )
+				return false;
+			if ( !get(recd.u.s4.beta_1) )
+				return false;
+			if ( !get(recd.u.s4.beta_2) )
+				return false;
+			if ( !get(recd.u.s4.beta_3) )
+				return false;
+		}
+		break;
+	case s_R58::UTC :
+		for ( uint8_t x=0; x<recd.n; ++x ) {
+			if ( get(recd.u.s5.compressed,13) != 13 )
+				return false;
+			if ( !get(recd.u.s5.a_0) )
+				return false;
+			if ( !get(recd.u.s5.a_1) )
+				return false;
+			if ( !get(recd.u.s5.delta_t_ls) )
+				return false;
+			if ( !get(recd.u.s5.t_ot) )
+				return false;
+			if ( !get(recd.u.s5.wn_t) )
+				return false;
+			if ( !get(recd.u.s5.wn_lsf) )
+				return false;
+			if ( !get(recd.u.s5.dn) )
+				return false;
+			if ( !get(recd.u.s5.delta_t_lsf) )
+				return false;
+		}
+		break;
+	case s_R58::Ephemeris :
+		for ( uint8_t x=0; x<recd.n; ++x ) {
+			if ( !get(recd.u.s6.sv_prn) )
+				return false;
+			if ( !get(recd.u.s6.t_ephem) )
+				return false;
+			if ( !get(recd.u.s6.weekno) )
+				return false;
+			if ( !get(recd.u.s6.codel2) )
+				return false;
+			if ( !get(recd.u.s6.l2pdata) )
+				return false;
+			if ( !get(recd.u.s6.svacc_raw) )
+				return false;
+			if ( !get(recd.u.s6.sv_health) )
+				return false;
+			if ( !get(recd.u.s6.iodc) )
+				return false;
+			if ( !get(recd.u.s6.t_gd) )
+				return false;
+			if ( !get(recd.u.s6.t_oc) )
+				return false;
+			if ( !get(recd.u.s6.a_f2) )
+				return false;
+			if ( !get(recd.u.s6.a_f1) )
+				return false;
+			if ( !get(recd.u.s6.a_f0) )
+				return false;
+			if ( !get(recd.u.s6.svacc) )
+				return false;
+			if ( !get(recd.u.s6.iode) )
+				return false;
+			if ( !get(recd.u.s6.fit_ival) )
+				return false;
+			if ( !get(recd.u.s6.c_rs) )
+				return false;
+			if ( !get(recd.u.s6.delta_n) )
+				return false;
+			if ( !get(recd.u.s6.m_0) )
+				return false;
+			if ( !get(recd.u.s6.c_uc) )
+				return false;
+			if ( !get(recd.u.s6.e) )
+				return false;
+			if ( !get(recd.u.s6.c_us) )
+				return false;
+			if ( !get(recd.u.s6.sqrt_a) )
+				return false;
+			if ( !get(recd.u.s6.t_oe) )
+				return false;
+			if ( !get(recd.u.s6.c_ic) )
+				return false;
+			if ( !get(recd.u.s6.omega_0) )
+				return false;
+			if ( !get(recd.u.s6.c_is) )
+				return false;
+			if ( !get(recd.u.s6.i_o) )
+				return false;
+			if ( !get(recd.u.s6.c_rc) )
+				return false;
+			if ( !get(recd.u.s6.omega) )
+				return false;
+			if ( !get(recd.u.s6.omegadot) )
+				return false;
+			if ( !get(recd.u.s6.idot) )
+				return false;
+			if ( !get(recd.u.s6.axis) )
+				return false;
+			if ( !get(recd.u.s6.n) )
+				return false;
+			if ( !get(recd.u.s6.r1me2) )
+				return false;
+			if ( !get(recd.u.s6.omega_n) )
+				return false;
+			if ( !get(recd.u.s6.odot_n) )
+				return false;
+		}
+		break;
+	default :
+		return false;
+	}
+
+	return true;
+}
+
+bool
+RxPacket::get(s_R5C& recd) {
+
+	if ( !get(recd.sv_prn) )
+		return false;
+	if ( !get(recd.chan_slot) )
+		return false;
+	if ( !get(recd.aquisflag) )
+		return false;
+	if ( !get(recd.ephemflag) )
+		return false;
+	if ( !get(recd.siglevel) )
+		return false;
+	if ( !get(recd.gps_time) )
+		return false;
+	if ( !get(recd.elevation) )
+		return false;
+	if ( !get(recd.azimuth) )
+		return false;
+	if ( !get(recd.oldmeas) )
+		return false;
+	if ( !get(recd.intmsec) )
+		return false;
+	if ( !get(recd.baddata) )
+		return false;
+	if ( !get(recd.datacol) )
+		return false;
+	return true;
+}
+
+bool
+RxPacket::get(s_R5F11& recd) {
+	return get(recd.status);
+}
+
+bool
+RxPacket::get(s_R83& recd) {
+
+	if ( !get(recd.x) )
+		return false;
+	if ( !get(recd.y) )
+		return false;
+	if ( !get(recd.z) )
+		return false;
+	if ( !get(recd.clock_bias) )
+		return false;
+	if ( state_sd ) {
+		if ( !get(recd.u.time_of_fix1) )
+			return false;
+	} else	{
+		if ( !get(recd.u.time_of_fix2) )
+			return false;
+	}
+	return true;
+}
+
 
 //////////////////////////////////////////////////////////////////////
 // Encoding a Packet
@@ -502,348 +925,6 @@ decode_R45(s_inpkt *in,s_R45 *recd) {
 	rc = inp_getb(in,&recd->reserved2,64);
 	if ( rc < 0 ) return rc;
 	rc = inp_geti16(in,&recd->Checksum);
-	if ( rc < 0 ) return rc;
-	return 0;
-}
-
-int16_t
-decode_R47(s_inpkt *in,s_R47 *recd) {
-	rc = inp_getb(in,&recd->count,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->sat1,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->signal_lev1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->sat2,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->signal_lev2);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->sat3,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->signal_lev3);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->sat4,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->signal_lev4);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->sat5,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->signal_lev5);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->sat6,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->signal_lev6);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->sat7,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->signal_lev7);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->sat8,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->signal_lev8);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->sat9,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->signal_lev9);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->sat10,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->signal_lev10);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->sat11,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->signal_lev11);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->sat12,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->signal_lev12);
-	if ( rc < 0 ) return rc;
-	return 0;
-}
-
-int16_t
-decode_R49(s_inpkt *in,s_R49 *recd) {
-	rc = inp_getb(in,&recd->health1,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health2,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health3,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health4,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health5,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health6,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health7,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health8,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health9,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health10,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health11,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health12,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health13,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health14,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health15,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health16,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health17,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health18,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health19,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health20,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health21,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health22,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health23,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health24,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health25,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health26,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health27,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health28,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health29,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health30,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health31,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health32,1);
-	if ( rc < 0 ) return rc;
-	return 0;
-}
-
-int16_t
-decode_R4A(s_inpkt *in,s_R4A *recd) {
-	rc = inp_getf32(in,&recd->latitude);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->longitude);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->altitude);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->clock_bias);
-	if ( rc < 0 ) return rc;
-	if ( state_sd )
-		rc = inp_getf32(in,&recd->u.time_of_fix1);
-	else
-		rc = inp_getf64(in,&recd->u.time_of_fix2);
-	if ( rc < 0 ) return rc;
-	return 0;
-}
-
-int16_t
-decode_R4C(s_inpkt *in,s_R4C *recd) {
-	rc = inp_getb(in,&recd->dynamics_code,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->elevation_mask);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->signal_level_mask);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->pdop_mask);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->podp_switch);
-	if ( rc < 0 ) return rc;
-	return 0;
-}
-
-int16_t
-decode_R4D(s_inpkt *in,s_R4D *recd) {
-	rc = inp_getf32(in,&recd->offset);
-	if ( rc < 0 ) return rc;
-	return 0;
-}
-
-int16_t
-decode_R4E(s_inpkt *in,s_R4E *recd) {
-	rc = inp_getb(in,&recd->yn,1);
-	if ( rc < 0 ) return rc;
-	return 0;
-}
-
-int16_t
-decode_R4F(s_inpkt *in,s_R4F *recd) {
-	rc = inp_getf64(in,&recd->a0);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->a1);
-	if ( rc < 0 ) return rc;
-	rc = inp_geti16(in,&recd->delta_t_ls);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->tot);
-	if ( rc < 0 ) return rc;
-	rc = inp_geti16(in,&recd->wn_t);
-	if ( rc < 0 ) return rc;
-	rc = inp_geti16(in,&recd->wn_lsf);
-	if ( rc < 0 ) return rc;
-	rc = inp_geti16(in,&recd->dn);
-	if ( rc < 0 ) return rc;
-	rc = inp_geti16(in,&recd->delta_t_lsf);
-	if ( rc < 0 ) return rc;
-	return 0;
-}
-
-int16_t
-decode_R53(s_inpkt *in,s_R53 *recd) {
-	rc = inp_getf32(in,&recd->receiver);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->reserved1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->reserved2);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->voltage);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->supplyv);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->Antenna);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->pwr25);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->pwr50);
-	if ( rc < 0 ) return rc;
-	return 0;
-}
-
-int16_t
-decode_R54(s_inpkt *in,s_R54 *recd) {
-	rc = inp_getf32(in,&recd->bias);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->bias_rate);
-	if ( rc < 0 ) return rc;
-	if ( state_sd )
-		rc = inp_getf32(in,&recd->u.time_of_fix1);
-	else
-		rc = inp_getf64(in,&recd->u.time_of_fix2);
-	if ( rc < 0 ) return rc;
-	return 0;
-}
-
-int16_t
-decode_R55(s_inpkt *in,s_R55 *recd) {
-	rc = inp_getb(in,&recd->position,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->velocity,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->timing,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->auxiliary,1);
-	if ( rc < 0 ) return rc;
-	return 0;
-}
-
-int16_t
-decode_R56(s_inpkt *in,s_R56 *recd) {
-	rc = inp_getf32(in,&recd->eastvel);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->northvel);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->upvel);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->clock_bias_rate);
-	if ( rc < 0 ) return rc;
-	if ( state_sd )
-		rc = inp_getf32(in,&recd->u.time_of_fix1);
-	else
-		rc = inp_getf64(in,&recd->u.time_of_fix2);
-	if ( rc < 0 ) return rc;
-	return 0;
-}
-
-int16_t
-decode_R57(s_inpkt *in,s_R57 *recd) {
-	rc = inp_getb(in,&recd->info_src,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->diag_code,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->fix_time);
-	if ( rc < 0 ) return rc;
-	rc = inp_geti16(in,&recd->fix_week);
-	if ( rc < 0 ) return rc;
-	return 0;
-}
-
-int16_t
-decode_R58(s_inpkt *in,s_R58 *recd) {
-	rc = inp_getb(in,&recd->operation,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->datatype,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->sv_prn,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->n,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->satdata,249);
-	if ( rc < 0 ) return rc;
-	return 0;
-}
-
-int16_t
-decode_R59(s_inpkt *in,s_R59 *recd) {
-	rc = inp_getb(in,&recd->operation,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->sv_flags,32);
-	if ( rc < 0 ) return rc;
-	return 0;
-}
-
-int16_t
-decode_R5A(s_inpkt *in,s_R5A *recd) {
-	rc = inp_getb(in,&recd->sv_prn,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->samplength);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->siglevel);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->code_phase);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->doppler);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf64(in,&recd->time);
-	if ( rc < 0 ) return rc;
-	return 0;
-}
-
-
-int16_t
-decode_R5C(s_inpkt *in,s_R5C *recd) {
-	rc = inp_getb(in,&recd->sv_prn,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->chan_slot,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->aquisflag,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->ephemflag,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->siglevel);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->gps_time);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->elevation);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->azimuth);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->oldmeas,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->intmsec,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->baddata,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->datacol,1);
 	if ( rc < 0 ) return rc;
 	return 0;
 }
@@ -1397,24 +1478,6 @@ decode_R7D09(s_inpkt *in,s_R7D09 *recd) {
 	rc = inp_getb(in,&recd->reserved,8);
 	if ( rc < 0 ) return rc;
 	rc = inp_geti16(in,&recd->checksum);
-	if ( rc < 0 ) return rc;
-	return 0;
-}
-
-int16_t
-decode_R83(s_inpkt *in,s_R83 *recd) {
-	rc = inp_getf64(in,&recd->x);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf64(in,&recd->y);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf64(in,&recd->z);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf64(in,&recd->clock_bias);
-	if ( rc < 0 ) return rc;
-	if ( state_sd )
-		rc = inp_getf32(in,&recd->u.time_of_fix1);
-	else
-		rc = inp_getf64(in,&recd->u.time_of_fix2);
 	if ( rc < 0 ) return rc;
 	return 0;
 }
