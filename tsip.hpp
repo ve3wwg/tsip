@@ -474,6 +474,76 @@ struct s_R83 {
 };
 
 //////////////////////////////////////////////////////////////////////
+// Response 84 : Double Precision LLA Position Fix & Clock Bias 
+//////////////////////////////////////////////////////////////////////
+
+struct s_R84 {
+	double	latitude;	//  Latitude of position (+north) radians 
+	double	longitude;	//  Longitude of position (+east) radians 
+	double	altitude;	//  Altitude (m) 
+	double	clock_bias;	//  (m) 
+	union {			//  GPS or UTC (seconds) 
+	  float	time_of_fix1;
+	  double	time_of_fix2;
+	}	u;
+};
+
+//////////////////////////////////////////////////////////////////////
+// Response 8F 41 : Manufacturing Parameters
+//////////////////////////////////////////////////////////////////////
+
+struct s_R8F41 {
+	int16_t	serprefix;		// Board serial # prefix
+	uint32_t serialno;		// Board serial #
+	uint8_t	year;
+	uint8_t	month;
+	uint8_t	day;
+	uint8_t	hour;
+	float	oscoffset;		// Oscillator offset
+	int16_t	testcode;		// Test code identification number
+};
+
+//////////////////////////////////////////////////////////////////////
+// Response 8F 42 : Production Parameters
+//////////////////////////////////////////////////////////////////////
+
+struct s_R8F42 {
+	uint8_t	optsprefix;		// Production options prefix
+	uint8_t	pnextension;		// Production number extension
+	int16_t	csnpref;		// Case serial number prefix
+	uint32_t caseser;		// Case serial number
+	uint32_t prodno;		// Production number
+	int16_t reserved1;
+	int16_t	machid;			// Machine identification number
+	int16_t reserved2;
+};
+
+//////////////////////////////////////////////////////////////////////
+// Response 8F AB : Time Information
+//////////////////////////////////////////////////////////////////////
+
+struct s_R8FAB {
+	uint64_t	tow;		// Time of week
+	uint32_t	weekno;		// Week number
+	int32_t		utc_offset;	// Seconds
+	union	{
+		uint8_t	raw;
+		struct	{
+			uint8_t	utc_time : 1;	// 1=UTC, else GPS time
+			uint8_t	reserved1 : 1;
+			uint8_t	time_set : 1;	// 1=set, else not se
+			uint8_t	have_utc : 1;	// 0=have UTC info, 1=no UTC info
+		} bits;
+	} 		timing_flags;
+	uint8_t		seconds;
+	uint8_t		minutes;
+	uint8_t		hours;
+	uint8_t		mday;			// Day of month
+	uint8_t		month;			// 1-12
+	uint32_t	year;			// Four digits of year
+};
+
+//////////////////////////////////////////////////////////////////////
 // Parse a Received Packet
 //////////////////////////////////////////////////////////////////////
 
@@ -493,6 +563,8 @@ public:	RxPacket();
 	bool get(int16_t& ival);
 	bool get(int32_t& ival);
 	bool get(int64_t& ival);
+	bool get(uint32_t& uval);
+	bool get(uint64_t& uval);
 	bool get(float& fval);
 	bool get(double& fval);
 	bool get(s_R40& recd);
@@ -522,6 +594,10 @@ public:	RxPacket();
 	bool get(s_R6D& recd);
 	bool get(s_R82& recd);
 	bool get(s_R83& recd);
+	bool get(s_R84& recd);
+	bool get(s_R8F41& recd);
+	bool get(s_R8F42& recd);
+	bool get(s_R8FAB& recd);
 
 	inline void set_precision(bool dprecision) { state_sd = dprecision; }
 	inline bool is_double() { return state_sd; }
@@ -920,18 +996,6 @@ struct s_R7D09 {
 	uint8_t	interval;	//  interval code 
 	uint8_t	reserved[8];
 	int16_t	checksum;
-};
-
-// Response 84 : Double Precision LLA Position Fix & Clock Bias 
-struct s_R84 {
-	double	latitude;	//  Latitude of position (+north) radians 
-	double	longitude;	//  Longitude of position (+east) radians 
-	double	altitude;	//  Altitude (m) 
-	double	clock_bias;	//  (m) 
-	union {		//  GPS or UTC (seconds) 
-	  float	time_of_fix1;
-	  double	time_of_fix2;
-	}	u;
 };
 
 // Response 85 : Differential Correction Status 

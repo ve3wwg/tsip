@@ -68,6 +68,20 @@ RxPacket::get(int32_t& ival) {
 }
 
 bool
+RxPacket::get(uint32_t& uval) {
+	uint8_t bytes[4];
+
+	if ( get(bytes,4) != 4 )
+		return false;
+	
+	uval	= ((uint32_t)bytes[0] << 24)
+		| ((uint32_t)bytes[1] << 16)
+		| ((uint32_t)bytes[2] <<  8)
+		| ((uint32_t)bytes[3]);
+	return true;
+}
+
+bool
 RxPacket::get(int64_t& ival) {
 	int32_t i32;
 
@@ -78,6 +92,20 @@ RxPacket::get(int64_t& ival) {
 	if ( !get(i32) )
 		return false;
 	ival |= i32;
+	return true;
+}
+
+bool
+RxPacket::get(uint64_t& uval) {
+	uint32_t u32;
+
+	if ( !get(u32) )
+		return false;
+
+	uval = (uint64_t)u32 << 32;
+	if ( !get(u32) )
+		return false;
+	uval |= u32;
 	return true;
 }
 
@@ -706,6 +734,96 @@ RxPacket::get(s_R83& recd) {
 	return true;
 }
 
+bool
+RxPacket::get(s_R84& recd) {
+
+	if ( !get(recd.latitude) )
+		return false;
+	if ( !get(recd.longitude) )
+		return false;
+	if ( !get(recd.altitude) )
+		return false;
+	if ( !get(recd.clock_bias) )
+		return false;
+	if ( state_sd ) {
+		if ( !get(recd.u.time_of_fix1) )
+			return false;
+	} else	{
+		if ( !get(recd.u.time_of_fix2) )
+			return false;
+	}
+	return false;
+}
+
+bool
+RxPacket::get(s_R8F41& recd) {
+
+	if ( !get(recd.serprefix) )
+		return false;
+	if ( !get(recd.serialno) )
+		return false;
+	if ( !get(recd.year) )
+		return false;	
+	if ( !get(recd.month) )
+		return false;	
+	if ( !get(recd.day) )
+		return false;
+	if ( !get(recd.hour) )
+		return false;
+	if ( !get(recd.oscoffset) )
+		return false;
+	if ( !get(recd.testcode) )
+		return false;
+	return true;
+}
+
+bool
+RxPacket::get(s_R8F42& recd) {
+
+	if ( !get(recd.optsprefix) )
+		return false;
+	if ( !get(recd.pnextension) )
+		return false;
+	if ( !get(recd.csnpref) )
+		return false;
+	if ( !get(recd.caseser) )
+		return false;
+	if ( !get(recd.prodno) )
+		return false;
+	if ( !get(recd.reserved1) )
+		return false;
+	if ( !get(recd.machid) )
+		return false;
+	if ( !get(recd.reserved2) )
+		return false;
+	return true;
+}
+
+bool
+RxPacket::get(s_R8FAB& recd) {
+
+	if ( !get(recd.tow) )
+		return false;
+	if ( !get(recd.weekno) )
+		return false;
+	if ( !get(recd.utc_offset) )
+		return false;
+	if ( !get(recd.timing_flags.raw) )
+		return false;
+	if ( !get(recd.seconds) )
+		return false;
+	if ( !get(recd.minutes) )
+		return false;
+	if ( !get(recd.hours) )
+		return false;
+	if ( !get(recd.mday) )
+		return false;
+	if ( !get(recd.month) )
+		return false;
+	if ( !get(recd.year) )
+		return false;
+	return true;
+}
 
 //////////////////////////////////////////////////////////////////////
 // Encoding a Packet
@@ -1478,24 +1596,6 @@ decode_R7D09(s_inpkt *in,s_R7D09 *recd) {
 	rc = inp_getb(in,&recd->reserved,8);
 	if ( rc < 0 ) return rc;
 	rc = inp_geti16(in,&recd->checksum);
-	if ( rc < 0 ) return rc;
-	return 0;
-}
-
-int16_t
-decode_R84(s_inpkt *in,s_R84 *recd) {
-	rc = inp_getf64(in,&recd->latitude);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf64(in,&recd->longitude);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf64(in,&recd->altitude);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf64(in,&recd->clock_bias);
-	if ( rc < 0 ) return rc;
-	if ( state_sd )
-		rc = inp_getf32(in,&recd->u.time_of_fix1);
-	else
-		rc = inp_getf64(in,&recd->u.time_of_fix2);
 	if ( rc < 0 ) return rc;
 	return 0;
 }
