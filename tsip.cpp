@@ -916,6 +916,30 @@ RxPacket::get(s_R1C83& recd) {
 	return true;
 }
 
+bool
+RxPacket::get(s_R45& recd) {
+	if ( !get(recd.major) )
+		return false;
+	if ( !get(recd.minor) )
+		return false;
+	if ( !get(recd.month) )
+		return false;
+	if ( !get(recd.day) )
+		return false;
+	if ( !get(recd.year) )
+		return false;
+	if ( !get(recd.major2) )
+		return false;
+	if ( !get(recd.minor2) )
+		return false;
+	if ( !get(recd.month2) )
+		return false;
+	if ( !get(recd.day2) )
+		return false;
+	return get(recd.year2);
+}
+
+
 //////////////////////////////////////////////////////////////////////
 // Encoding a Packet
 //////////////////////////////////////////////////////////////////////
@@ -1036,7 +1060,7 @@ TxPacket::close() {
 
 bool
 TxPacket::C1C01() {
-	return command(0x1C01);
+	return command(0x1C01) && close();
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -1047,7 +1071,69 @@ TxPacket::C1C01() {
 
 bool
 TxPacket::C1C03() {
-	return command(0x1C03);
+	return command(0x1C03) && close();
+}
+
+//////////////////////////////////////////////////////////////////////
+// 1E	-- Initiate Cold or Factory Reset
+//
+// Arguments:
+//	type:	'K' -	Cold reset
+//		'F' -	Factory reset
+//		'C' - 	Compatibility reset
+//		'N' -	Clear navigation EEPROM
+//		'R' -	Set EEPROM to factory config and reset
+//////////////////////////////////////////////////////////////////////
+
+bool
+TxPacket::C1E(char type) {
+	return command(0x1E) && put(uint8_t(type)) && close();
+}
+
+//////////////////////////////////////////////////////////////////////
+// 1F	-- Software Versions Request
+// Response:
+//	R45 
+//////////////////////////////////////////////////////////////////////
+
+bool
+TxPacket::C1F() {
+	return command(0x1F) && close();
+}
+
+//////////////////////////////////////////////////////////////////////
+// 20	-- Almanac Request
+// Response:
+//	R40
+//////////////////////////////////////////////////////////////////////
+
+bool
+TxPacket::C20() {
+	return command(0x20) && close();
+}
+
+//////////////////////////////////////////////////////////////////////
+// 21	-- Current Time Request
+// Response:
+//	R41
+//////////////////////////////////////////////////////////////////////
+
+bool
+TxPacket::C21() {
+	return command(0x21) && close();
+}
+
+//////////////////////////////////////////////////////////////////////
+// 23	-- Initial Position (XYZ Cartesian ECEF) Command
+//////////////////////////////////////////////////////////////////////
+
+bool
+TxPacket::C23(float x,float y,float z) {
+	return command(0x21)
+		&& put(x)
+		&& put(y)
+		&& put(z)
+		&& close();
 }
 
 
@@ -1106,65 +1192,6 @@ decode_R44(s_inpkt *in,s_R44 *recd) {
 	rc = inp_getf32(in,&recd->vdop);
 	if ( rc < 0 ) return rc;
 	rc = inp_getf32(in,&recd->tdop);
-	if ( rc < 0 ) return rc;
-	return 0;
-}
-
-int16_t
-decode_R45(s_inpkt *in,s_R45 *recd) {
-	rc = inp_getb(in,&recd->nav_proc_major,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->nav_proc_minor,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->nav_proc_month,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->nav_proc_day,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->nav_proc_year,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->sig_proc_major,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->sig_proc_minor,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->sig_proc_month,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->sig_proc_day,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->sig_proc_year,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->bsd_serial_no,5);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->checksum,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_geti16(in,&recd->revision);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->machine_id,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->config_length,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->channels,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->rtcm_input,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->rtcm_output,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->fix_rate,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->sync_meas,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->misc,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->nmea_output,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->pps1_output,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->product_id,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->reserved1,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->reserved2,64);
-	if ( rc < 0 ) return rc;
-	rc = inp_geti16(in,&recd->Checksum);
 	if ( rc < 0 ) return rc;
 	return 0;
 }

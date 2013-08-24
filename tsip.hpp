@@ -66,6 +66,23 @@ struct s_R43 {
 };
 	
 //////////////////////////////////////////////////////////////////////
+// Response 45 : Receiver Firmware Information 
+//////////////////////////////////////////////////////////////////////
+
+struct s_R45 {
+	uint8_t	major;		// Navigation processor..
+	uint8_t	minor;
+	uint8_t	month;
+	uint8_t	day;
+	uint8_t	year;		// Year - 1900
+	uint8_t	major2;		// Signal processor..
+	uint8_t	minor2;
+	uint8_t	month2;
+	uint8_t	day2;
+	uint8_t	year2;		// Year - 1900
+};
+
+//////////////////////////////////////////////////////////////////////
 // Response 46 : Health of Receiver 
 //////////////////////////////////////////////////////////////////////
 
@@ -610,6 +627,7 @@ public:	RxPacket();
 	bool get(s_R41& recd);
 	bool get(s_R42& recd);
 	bool get(s_R43& recd);
+	bool get(s_R45& recd);
 	bool get(s_R46& recd);
 	bool get(s_R47& recd);
 	bool get(s_R48& recd);
@@ -666,6 +684,11 @@ public:	TxPacket();
 
 	bool C1C01();			// Software Version Information
 	bool C1C03();			// Hardware Version Information
+	bool C1E(char rtype='R');	// Factory Reset
+	bool C1F();			// Software Versions Request
+	bool C20();			// Almanac Request
+	bool C21();			// Time Request
+	bool C23(float x,float y,float z); // Initial Position (XYZ Cartesian ECEF) Command
 
 	inline uint16_t size() { return buflen; }
 };
@@ -703,37 +726,6 @@ struct s_R44 {
 	float	hdop;	//  Horizontal dilution of precision 
 	float	vdop;	//  Vertical dilution of precision 
 	float	tdop;	//  Time dilution of precision 
-};
-	
-// Response 45 : Receiver Firmware Information 
-struct s_R45 {
-	uint8_t	nav_proc_major;	//  Major portion of NAV Processor firmware release number 
-	uint8_t	nav_proc_minor;	//  Minor portion of NAV Processor firmware release number 
-	uint8_t	nav_proc_month;	//  Month of year when firmware released (1-12) 
-	uint8_t	nav_proc_day;	//  Day of month when firmware released (1-31) 
-	uint8_t	nav_proc_year;	//  Year - 1900, when firmware released 
-	uint8_t	sig_proc_major;	//  Major portion of SIG Processor firmware 
-	uint8_t	sig_proc_minor;	//  Minor portion of SIG Processor firmware 
-	uint8_t	sig_proc_month;	//  Month of year when firmware released (1-12) 
-	uint8_t	sig_proc_day;	//  Day of month when firmware released (1-31) 
-	uint8_t	sig_proc_year;	//  Year - 1900, when firmware released 
-	uint8_t	bsd_serial_no[5];	//  Serial number in BCD 
-	uint8_t	checksum;	//  Checksum of serial number (least sig byte of sums 10-14 = 0XFF) 
-	int16_t	revision;	//  Configuration revision number (0x00) 
-	uint8_t	machine_id;	//  Receiver machine ID (see product specific codes) 
-	uint8_t	config_length;	//  Length of data in configuration block (74) 
-	uint8_t	channels;	//  Number of channels (8-12) 
-	uint8_t	rtcm_input;	//  RTCM input status 
-	uint8_t	rtcm_output;	//  RTCM output status 
-	uint8_t	fix_rate;	//  Maximum fix rate (flags) 
-	uint8_t	sync_meas;	//  Synchronized measurement status (flags) 
-	uint8_t	misc;	//  Default value (3) 
-	uint8_t	nmea_output;	//  NMEA output status (flags) 
-	uint8_t	pps1_output;	//  1 PPS Output Status 
-	uint8_t	product_id;	//  Receiver product ID 
-	uint8_t	reserved1;	//  0x01 
-	uint8_t	reserved2[64];	//  0x00 
-	int16_t	Checksum;	//  of bytes 20-93 
 };
 	
 
