@@ -725,6 +725,10 @@ public:	TxPacket();
 	  bool aux_db_hz		// 1=Output db/Hz (0x47) vs AMU (0x5A/5C)
 	);
 
+	bool C37();			// Last Position and Velocity Request
+	bool C3A(uint8_t prn=0);	// Last Raw Measurement Request for sat prn
+	bool C3B(uint8_t prn=0);	// Satellite Ephemeris Status Request
+	bool C3C(uint8_t prn=0);	// Satellite Tracking Status Request
 
 	inline uint16_t size() { return buflen; }
 };
