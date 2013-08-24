@@ -689,6 +689,22 @@ public:	TxPacket();
 	bool C20();			// Almanac Request
 	bool C21();			// Time Request
 	bool C23(float x,float y,float z); // Initial Position (XYZ Cartesian ECEF) Command
+	bool C24();			// GPS Receiver Position Fix Mode Request
+	bool C25();			// Initiate Soft Reset / Self Test Command
+	bool C26();			// Health Request
+	bool C27();			// Signal Levels Request
+	bool C28();			// GPS System Message Request
+	bool C29();			// Almanac Health Page Request
+	bool C2A();			// Altitude for 2-D Mode Command
+	bool C2A(int16_t alt_meters);
+	bool C2A_cancel();
+	bool C2B(float latitude,float longitude,float altitude);
+	bool C2D();			// Oscillator Offset Request
+	bool C2E(float gps_time,int16_t weekno); // GPS Time Command
+	bool C2F();			// UTC Parameters Request
+	bool C31(float x,float y,float z); // Accurate Initial Position (XYZ Cartesian ECEF) Command
+	bool C32(float latitude,float longitude,float altitude); // Accurate Initial Position (Latitude, Longitude, Altitude) Command
+	bool C34(uint8_t prn=0);	// Satellite Number For One-Satellite Mode Command
 
 	inline uint16_t size() { return buflen; }
 };
