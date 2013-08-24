@@ -77,6 +77,16 @@ RxPacket::get(int16_t& ival) {
 }
 
 bool
+RxPacket::get(uint16_t& uval) {
+	uint8_t bytes[2];
+
+	if ( get(bytes,2) != 2 )
+		return false;
+	uval = ((uint16_t)bytes[0] << 8) | (uint16_t)bytes[1];
+	return true;
+}
+
+bool
 RxPacket::get(int32_t& ival) {
 	uint8_t bytes[4];
 
@@ -848,6 +858,64 @@ RxPacket::get(s_R8FAB& recd) {
 	return true;
 }
 
+bool
+RxPacket::get(s_R1C81& recd) {
+
+	if ( !get(recd.reserved1) )
+		return false;
+	if ( !get(recd.major_firm) )
+		return false;
+	if ( !get(recd.minor_firm) )
+		return false;
+	if ( !get(recd.build_no) )
+		return false;
+	if ( !get(recd.month) )
+		return false;
+	if ( !get(recd.day) )
+		return false;
+	if ( !get(recd.year) )
+		return false;
+	if ( !get(recd.length) )
+		return false;
+
+	uint16_t len = get(recd.prodname,sizeof recd.prodname);
+	if ( len > sizeof recd.prodname )
+		recd.length = sizeof recd.prodname;	
+	else if ( len < sizeof recd.prodname )
+		recd.length = len;	
+	if ( recd.length < sizeof recd.prodname )
+		recd.prodname[recd.length] = 0;
+	return true;
+}
+
+bool
+RxPacket::get(s_R1C83& recd) {
+
+	if ( !get(recd.serialno) )
+		return false;
+	if ( !get(recd.day) )
+		return false;
+	if ( !get(recd.month) )
+		return false;
+	if ( !get(recd.year) )
+		return false;
+	if ( !get(recd.hour) )
+		return false;
+	if ( !get(recd.hardw_code) )
+		return false;
+	if ( !get(recd.length) )
+		return false;
+
+	uint16_t len = get(recd.hardw_id,sizeof recd.hardw_id);
+	if ( len > sizeof recd.hardw_id )
+		recd.length = sizeof recd.hardw_id;	
+	else if ( len < sizeof recd.hardw_id )
+		recd.length = len;	
+	if ( recd.length < sizeof recd.hardw_id )
+		recd.hardw_id[recd.length] = 0;
+	return true;
+}
+
 //////////////////////////////////////////////////////////////////////
 // Encoding a Packet
 //////////////////////////////////////////////////////////////////////
@@ -944,12 +1012,43 @@ TxPacket::put(double fval) {
 }
 
 bool
+TxPacket::command(uint16_t id) {
+	if ( !(id & 0xFF00) )
+		return put(uint8_t(id));	// Normal command ID
+
+	uint8_t b, b2;
+	b = id >> 8;		// Command ID
+	b2 = id & 0xFF;		// Sub ID
+	return put(b) && put(b2);
+}
+
+bool
 TxPacket::close() {
 	static const uint8_t ending[] = { 0x10, 0x03 };
 	return put(ending,2);
 }
 
+//////////////////////////////////////////////////////////////////////
+// 1C01 -- Request Software Version Information
+// Responses:
+//	R1C81
+//////////////////////////////////////////////////////////////////////
 
+bool
+TxPacket::C1C01() {
+	return command(0x1C01);
+}
+
+//////////////////////////////////////////////////////////////////////
+// 1C03 -- Hardware Version Information
+// Responses:
+//	R1C83
+//////////////////////////////////////////////////////////////////////
+
+bool
+TxPacket::C1C03() {
+	return command(0x1C03);
+}
 
 
 #if 0
@@ -2267,35 +2366,6 @@ decode_R8F70(s_inpkt *in,s_R8F70 *recd) {
 }
 
 int16_t
-decode_R8171(s_inpkt *in,s_R8171 *recd) {
-	rc = inp_getb(in,&recd->recordx,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_geti16(in,&recd->stationid);
-	if ( rc < 0 ) return rc;
-	rc = inp_geti16(in,&recd->frequency);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->modulationrate,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->health,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->latitude);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->longitude);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->distance);
-	if ( rc < 0 ) return rc;
-	rc = inp_getf32(in,&recd->range);
-	if ( rc < 0 ) return rc;
-	rc = inp_geti32(in,&recd->seconds);
-	if ( rc < 0 ) return rc;
-	rc = inp_getb(in,&recd->uscgx,1);
-	if ( rc < 0 ) return rc;
-	rc = inp_geti16(in,&recd->checksum);
-	if ( rc < 0 ) return rc;
-	return 0;
-}
-
-int16_t
 decode_R8F73(s_inpkt *in,s_R8F73 *recd) {
 	rc = inp_geti16(in,&recd->checksum);
 	if ( rc < 0 ) return rc;
@@ -2658,6 +2728,37 @@ decode_R8F7F(s_inpkt *in,s_R8F7F *recd) {
 	if ( rc < 0 ) return rc;
 	return 0;
 }
+
+int16_t
+decode_R8171(s_inpkt *in,s_R8171 *recd) {
+	rc = inp_getb(in,&recd->recordx,1);
+	if ( rc < 0 ) return rc;
+	rc = inp_geti16(in,&recd->stationid);
+	if ( rc < 0 ) return rc;
+	rc = inp_geti16(in,&recd->frequency);
+	if ( rc < 0 ) return rc;
+	rc = inp_getb(in,&recd->modulationrate,1);
+	if ( rc < 0 ) return rc;
+	rc = inp_getb(in,&recd->health,1);
+	if ( rc < 0 ) return rc;
+	rc = inp_getf32(in,&recd->latitude);
+	if ( rc < 0 ) return rc;
+	rc = inp_getf32(in,&recd->longitude);
+	if ( rc < 0 ) return rc;
+	rc = inp_getf32(in,&recd->distance);
+	if ( rc < 0 ) return rc;
+	rc = inp_getf32(in,&recd->range);
+	if ( rc < 0 ) return rc;
+	rc = inp_geti32(in,&recd->seconds);
+	if ( rc < 0 ) return rc;
+	rc = inp_getb(in,&recd->uscgx,1);
+	if ( rc < 0 ) return rc;
+	rc = inp_geti16(in,&recd->checksum);
+	if ( rc < 0 ) return rc;
+	return 0;
+}
+
+
 #endif
 
 // End tsip.cpp

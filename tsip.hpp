@@ -459,6 +459,37 @@ struct s_R5C {
 };
 
 //////////////////////////////////////////////////////////////////////
+// Response 1C81 - Software Version Information
+//////////////////////////////////////////////////////////////////////
+
+struct s_R1C81 {
+	uint8_t	reserved1;
+	uint8_t	major_firm;	// Major number of firmware
+	uint8_t	minor_firm;	// Minor firmware no.
+	uint8_t	build_no;
+	uint8_t	month;
+	uint8_t	day;
+	int16_t	year;
+	uint8_t	length;
+	uint8_t	prodname[255];	// Returned product name
+};
+
+//////////////////////////////////////////////////////////////////////
+// Response 1C83 - Hardware Version Information
+//////////////////////////////////////////////////////////////////////
+
+struct s_R1C83 {
+	uint32_t serialno;	// Board serial no.
+	uint8_t	day;		// Build day
+	uint8_t	month;		// Build month
+	uint16_t year;		// Build year
+	uint8_t	hour;
+	uint8_t	hardw_code;	// Hardware code
+	uint8_t	length;		// Length of hardw_id returned
+	uint8_t	hardw_id[255];	// Hardware ID
+};
+
+//////////////////////////////////////////////////////////////////////
 // Response 83 : Double Precision XYZ Position Fix and Clock Bias 
 //////////////////////////////////////////////////////////////////////
 
@@ -561,13 +592,20 @@ public:	RxPacket();
 	uint16_t id();
 	bool get(uint8_t& byte);
 	uint16_t get(uint8_t *buf,uint16_t count);
+
 	bool get(int16_t& ival);
 	bool get(int32_t& ival);
 	bool get(int64_t& ival);
+
+	bool get(uint16_t& uval);
 	bool get(uint32_t& uval);
 	bool get(uint64_t& uval);
+
 	bool get(float& fval);
 	bool get(double& fval);
+
+	bool get(s_R1C81& recd);
+	bool get(s_R1C83& recd);
 	bool get(s_R40& recd);
 	bool get(s_R41& recd);
 	bool get(s_R42& recd);
@@ -623,11 +661,16 @@ public:	TxPacket();
 	bool put(int64_t ival);
 	bool put(float fval);
 	bool put(double fval);
+	bool command(uint16_t id);
 	bool close();
+
+	bool C1C01();			// Software Version Information
+	bool C1C03();			// Hardware Version Information
 
 	inline uint16_t size() { return buflen; }
 };
 
+#if 0
 // Response 13 : TSIP Parsing Error 
 struct s_R13 {
 	uint8_t	packet_id;	//  Packet ID 
@@ -1594,6 +1637,7 @@ struct s_R8F7F {
 	int16_t	checksum1;
 	int16_t	checksum2;
 };
+#endif
 
 #endif // TSIP_HPP
 
