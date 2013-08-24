@@ -706,6 +706,26 @@ public:	TxPacket();
 	bool C32(float latitude,float longitude,float altitude); // Accurate Initial Position (Latitude, Longitude, Altitude) Command
 	bool C34(uint8_t prn=0);	// Satellite Number For One-Satellite Mode Command
 
+	bool C35(
+	  bool pos_xyz_ecef_on,
+	  bool lla_on,
+	  bool lla_alt,			// 1=MSL geoid else hae (current datum)
+	  bool alt_input,		// 1=MSL geoid  else hae (current datum)
+	  bool pos_precision,		// 0=single, 1=double
+	  bool r8F20_on,		// 1=8F20 enabled
+	  bool vel_xyz_ecef_on,
+	  bool vel_enu,
+	  bool timing_utc,		// 1=UTC else GPS
+	  bool timing_comp,		// 1=Next integer sec else ASAP
+	  bool timing_fix,		// 1=Only on request else when computed
+	  bool timing_sync,		// 1=Synchronized else off
+	  bool timing_minproj,		// 1=minimize projection on
+	  bool aux_raw,			// 1=raw measurements on
+	  bool aux_smoothed,		// 1=Doppler smoothed codephase else raw
+	  bool aux_db_hz		// 1=Output db/Hz (0x47) vs AMU (0x5A/5C)
+	);
+
+
 	inline uint16_t size() { return buflen; }
 };
 

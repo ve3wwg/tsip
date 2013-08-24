@@ -1331,6 +1331,103 @@ TxPacket::C34(uint8_t prn) {
 		&& close();
 }
 
+//////////////////////////////////////////////////////////////////////
+// 35	-- I/O Option Flags Command
+// Arguments:
+//////////////////////////////////////////////////////////////////////
+
+bool
+TxPacket::C35(
+  bool pos_xyz_ecef_on,
+  bool lla_on,
+  bool lla_alt,			// 1=MSL geoid else hae (current datum)
+  bool alt_input,		// 1=MSL geoid  else hae (current datum)
+  bool pos_precision,		// 0=single, 1=double
+  bool r8F20_on,		// 1=8F20 enabled
+  bool vel_xyz_ecef_on,
+  bool vel_enu,
+  bool timing_utc,		// 1=UTC else GPS
+  bool timing_comp,		// 1=Next integer sec else ASAP
+  bool timing_fix,		// 1=Only on request else when computed
+  bool timing_sync,		// 1=Synchronized else off
+  bool timing_minproj,		// 1=minimize projection on
+  bool aux_raw,			// 1=raw measurements on
+  bool aux_smoothed,		// 1=Doppler smoothed codephase else raw
+  bool aux_db_hz) {		// 1=Output db/Hz (0x47) vs AMU (0x5A/5C)
+	union {
+		uint8_t	raw;
+		struct {
+			uint8_t	pos_xyz_ecef_on : 1;
+			uint8_t	lla_on          : 1;
+			uint8_t	lla_alt         : 1;
+			uint8_t	alt_input       : 1;
+			uint8_t	pos_precision   : 1;
+			uint8_t	r8F20_on        : 1;
+			uint8_t	unused          : 2;
+		} bits;
+	} b0;
+	union {
+		uint8_t	raw;
+		struct {
+			uint8_t	vel_xyz_ecef_on : 1;
+			uint8_t	vel_enu         : 1;
+			uint8_t	unused          : 6;
+		} bits;
+	} b1;
+	union {
+		uint8_t	raw;
+		struct {
+			uint8_t	timing_utc      : 1;
+			uint8_t	timing_comp     : 1;
+			uint8_t	timing_fix      : 1;
+			uint8_t	timing_sync     : 1;
+			uint8_t	timing_minproj  : 1;
+			uint8_t	unused          : 3;
+		} bits;
+	} b2;
+	union {
+		uint8_t	raw;
+		struct {
+			uint8_t	aux_raw         : 1;
+			uint8_t	aux_smoothed    : 1;
+			uint8_t unused1         : 1;
+			uint8_t	aux_db_hz       : 1;
+			uint8_t	unused          : 4;
+		} bits;
+	} b3;
+
+	b0.raw 			= 0;
+	b0.bits.pos_xyz_ecef_on	= pos_xyz_ecef_on;
+	b0.bits.lla_on		= lla_on;
+	b0.bits.lla_alt		= lla_alt;
+	b0.bits.alt_input	= alt_input;
+	b0.bits.pos_precision	= pos_precision;
+	b0.bits.r8F20_on	= r8F20_on;
+
+	b1.raw 			= 0;
+	b1.bits.vel_xyz_ecef_on	= vel_xyz_ecef_on;
+	b1.bits.vel_enu		= vel_enu;
+
+	b2.raw			= 0;
+	b2.bits.timing_utc	= timing_utc;
+	b2.bits.timing_comp	= timing_comp;
+	b2.bits.timing_fix	= timing_fix;
+	b2.bits.timing_sync	= timing_sync;
+	b2.bits.timing_minproj	= timing_minproj;
+
+	b3.raw 			= 0;
+	b3.bits.aux_raw		= aux_raw;
+	b3.bits.aux_smoothed	= aux_smoothed;
+	b3.bits.aux_db_hz	= aux_db_hz;
+
+	return command(0x35)
+		&& put(b0.raw)
+		&& put(b1.raw)
+		&& put(b2.raw)
+		&& put(b3.raw)
+		&& close();
+}
+
 
 #if 0
 
