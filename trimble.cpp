@@ -21,54 +21,115 @@ struct termios tios, sv_tios;
 bool quit = false;
 
 static void
+cdump(uint8_t *packet,int plen) {
+	int x;
+	
+	printf("CMD[%02d] : ",plen);
+
+	for ( x=0; x<plen; ++x )
+		printf("%02X ",packet[x]);
+
+	fputs(";\n",stdout);
+	fflush(stdout);
+}
+
+static void
 cmdcb(Packet& pkt,char cmd) {
+	TxPacket tx;
+	uint8_t buf[512];
+
+	tx.open(buf,sizeof buf);
 
 	fprintf(stderr,"\nCMD = '%c'\n",cmd);
 	fflush(stderr);
 
 	switch ( cmd ) {
-	case 'c' :
-		printf("CLEAR : 10 1E 4B 10 03 ;\n");
-		pkt.putb(0x10);
-		pkt.putb(0x1E);
-		pkt.putb(0x4B);
-		pkt.putb(0x10);
-		pkt.putb(0x03);
+	case '?' :
+		printf(	"v - Software Version\n"
+			"V - Hardware Version\n"
+			"p - GPS Position Fix\n"
+			"m - GPS System Message Request\n"
+			"L - Signals Levels Request (27)\n"
+			"c - Clear\n"
+			"t - Time request\n"
+			"f - Firmware\n"
+			"F - Factory Reset Request\n"
+			"k - Cold Reset\n"
+			"r - Software Reset\n"
+			"h - Health Request\n"
+			"A - Almanac Request (20)\n"
+			"x/q Quit\n");
+		break;
+	case 'A' :
+		printf("20 - Almanac Request (A)\n");
+		tx.C20();
+		pkt.put(buf,tx.size());
+		cdump(buf,tx.size());
 		break;
 	case 't' :
-		printf("TIME : 10 21 10 03 ; EXP(41)\n");
-		pkt.putb(0x10);
-		pkt.putb(0x21);
-		pkt.putb(0x10);
-		pkt.putb(0x03);
+		printf("21 - Time Request\n");
+		tx.C21();
+		pkt.put(buf,tx.size());
+		cdump(buf,tx.size());
+		break;
+	case 'v' :
+		printf("1C01 - Software Version\n");
+		tx.C1C01();
+		pkt.put(buf,tx.size());
+		cdump(buf,tx.size());
+		break;
+	case 'V' :
+		printf("1C03 - Hardware version\n");
+		tx.C1C03();
+		pkt.put(buf,tx.size());
+		cdump(buf,tx.size());
+		break;
+	case 'p' :
+		printf("24 - GPS Receiver Position Fix Mode Request\n");
+		tx.C24();
+		pkt.put(buf,tx.size());
+		cdump(buf,tx.size());
+		break;
+	case 'r' :
+		printf("25 - Soft Reset/Self Test (r)\n");
+		tx.C25();
+		pkt.put(buf,tx.size());
+		cdump(buf,tx.size());
+		break;
+	case 'm' :
+		printf("28 - GPS System Message Request (m)\n");
+		tx.C28();
+		pkt.put(buf,tx.size());
+		cdump(buf,tx.size());
+		break;
+	case 'h' :
+		printf("26 - Health Request\n");
+		tx.C26();
+		pkt.put(buf,tx.size());
+		cdump(buf,tx.size());
+		break;
+	case 'k' :
+		printf("1E 'K' - Cold Reset (K)\n");
+		tx.C1E('K');
+		pkt.put(buf,tx.size());
+		cdump(buf,tx.size());
+		break;
+	case 'F' :
+		printf("1E 'R' - Factory Reset (F)\n");
+		tx.C1E('R');
+		pkt.put(buf,tx.size());
+		cdump(buf,tx.size());
+		break;
+	case 'L' :
+		printf("27 - Signal Levels Request (L)\n");
+		tx.C27();
+		pkt.put(buf,tx.size());
+		cdump(buf,tx.size());
 		break;
 	case 'f' :
 		printf("FRMW : 10 1F 10 03 ; EXP(45)\n");
 		pkt.putb(0x10);
 		pkt.putb(0x1F);
-		pkt.putb(0x10);
-		pkt.putb(0x03);
-		break;
-	case 'F' :
-		printf("FACTORY : 10 8E 45 03 10 03 ; EXP(?)\n");
-		pkt.putb(0x10);
-		pkt.putb(0x8E);
-		pkt.putb(0x45);
-		pkt.putb(0x03);
-		pkt.putb(0x10);
-		pkt.putb(0x03);
-		break;
-	case 'r' :
-		printf("SRST : 10 25 10 03 ; EXP(41,45,46,4B..)\n");
-		pkt.putb(0x10);
-		pkt.putb(0x25);
-		pkt.putb(0x10);
-		pkt.putb(0x03);
-		break;
-	case 'h' :
-		printf("HLTH : 10 26 10 03 ; EXP(46/4B)\n");
-		pkt.putb(0x10);
-		pkt.putb(0x26);
 		pkt.putb(0x10);
 		pkt.putb(0x03);
 		break;
@@ -78,6 +139,9 @@ cmdcb(Packet& pkt,char cmd) {
 		exit(0);
 		break;
 	}
+
+	fflush(stdout);
+	fflush(stderr);
 }
 
 static void
@@ -121,6 +185,8 @@ main(int argc,char **argv) {
 	}
 
 	for (;;) {
+		fflush(stdout);
+		fflush(stderr);
 		pkt.get(&packet,&pktlen,ended);
 		if ( pktlen <= 0 ) {
 			puts("<EOF>");
