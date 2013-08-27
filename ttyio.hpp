@@ -55,6 +55,7 @@ public:	Packet();
 	inline void registercb(cmdcb_t usrcb) { callback = usrcb; }
 
 	void putb(uint8_t byte);		// Put byte out to serial port
+	void put(uint8_t *bytes,uint16_t len);	// Put len bytes
 
 	void get(uint8_t **packet,int *length,bool& ended);
 };

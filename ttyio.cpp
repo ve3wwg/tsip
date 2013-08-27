@@ -175,6 +175,17 @@ Packet::putb(uint8_t byte) {
 }
 
 //////////////////////////////////////////////////////////////////////
+// Put n bytes
+//////////////////////////////////////////////////////////////////////
+
+void
+Packet::put(uint8_t *buf,uint16_t len) {
+
+	for ( ; len > 0; --len )
+		putb(*buf++);
+}
+
+//////////////////////////////////////////////////////////////////////
 // Put a byte into the receiving buffer
 //////////////////////////////////////////////////////////////////////
 
@@ -218,8 +229,10 @@ Packet::get(uint8_t **packet,int *length,bool& ended) {
 		case byte_serial :
 			switch ( state ) {
 			case pkt_idle :
-				if ( byte == 0x10 )
+				if ( byte == 0x10 ) {
 					state = pkt_data;
+					buflen = 0;
+				}
 				break;
 			case pkt_data :
 				if ( byte == 0x10 ) {
@@ -238,10 +251,7 @@ Packet::get(uint8_t **packet,int *length,bool& ended) {
 					ended = true;
 				} else	{
 					unget(byte);
-					state = pkt_data;
-					*packet = buf;
-					*length = buflen;
-					return;
+					state = pkt_idle;
 				}
 				break;
 			case pkt_end :
