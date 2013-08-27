@@ -127,11 +127,10 @@ cmdcb(Packet& pkt,char cmd) {
 		cdump(buf,tx.size());
 		break;
 	case 'f' :
-		printf("FRMW : 10 1F 10 03 ; EXP(45)\n");
-		pkt.putb(0x10);
-		pkt.putb(0x1F);
-		pkt.putb(0x10);
-		pkt.putb(0x03);
+		printf("1F - Software Versions Request(f)\n");
+		tx.C1F();
+		pkt.put(buf,tx.size());
+		cdump(buf,tx.size());
 		break;
 	case 'x' :
 	case 'q' :
