@@ -669,6 +669,9 @@ class TxPacket {
 	uint16_t	maxlen;
 	uint16_t	buflen;
 
+protected:
+	bool put_asis(uint8_t byte);
+
 public:	TxPacket();
 
 	void open(uint8_t *buf,uint16_t maxlen);

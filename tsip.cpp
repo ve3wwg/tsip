@@ -957,6 +957,15 @@ TxPacket::open(uint8_t *buf,uint16_t maxlen) {
 }
 
 bool
+TxPacket::put_asis(uint8_t byte) {
+	if ( buflen < maxlen ) {
+		buf[buflen++] = byte;
+		return true;
+	}
+	return false;
+}
+
+bool
 TxPacket::put(uint8_t byte) {
 	if ( buflen < maxlen ) {
 		if ( byte != 0x10 ) {
@@ -1037,6 +1046,8 @@ TxPacket::put(double fval) {
 
 bool
 TxPacket::command(uint16_t id) {
+
+	put_asis(uint8_t(0x10));
 	if ( !(id & 0xFF00) )
 		return put(uint8_t(id));	// Normal command ID
 
@@ -1048,8 +1059,7 @@ TxPacket::command(uint16_t id) {
 
 bool
 TxPacket::close() {
-	static const uint8_t ending[] = { 0x10, 0x03 };
-	return put(ending,2);
+	return put_asis(0x10) && put_asis(0x03);
 }
 
 //////////////////////////////////////////////////////////////////////
