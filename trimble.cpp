@@ -498,6 +498,21 @@ main(int argc,char **argv) {
 				}
 			}
 			break;
+		case 0x5A :
+			{
+				s_R5A r;
+				if ( !rxpkt.get(r) ) {
+					printf(" ERR %d\n",rxpkt.get_offset());
+				} else	{
+					printf("  Satellite PRN  %u\n",r.sv_prn);
+					printf("  Sample length  %f ms\n",r.samplength);
+					printf("  Signal level   %f AMUs\n",r.siglevel);
+					printf("  Code phase     %f\n",r.code_phase);
+					printf("  Doppler        %f Hz\n",r.doppler);
+					printf("  Time           %lf seconds\n",r.time);
+				}
+			}
+			break;			
 		case 0x5B :
 			{
 				s_R5B r;
@@ -511,6 +526,16 @@ main(int argc,char **argv) {
 					printf("  t_oe          = %f secs\n",r.t_oe);
 					printf("  fit_ival_flag = %02X\n",r.fit_ival_flag);
 					printf("  ura           = %f m\n",r.ura);
+				}
+			}
+			break;
+		case 0x5F11 :
+			{
+				s_R5F11 r;
+				if ( !rxpkt.get(r) ) {
+					printf(" ERR %d\n",rxpkt.get_offset());
+				} else	{
+					printf("  status        = %02X\n",r.status);
 				}
 			}
 			break;
@@ -538,6 +563,22 @@ main(int argc,char **argv) {
 					printf(" ERR %d\n",rxpkt.get_offset());
 				} else	{
 					printf("  mode      = %d\n",r.mode);
+				}
+			}
+			break;
+		case 0x83 :
+			{
+				s_R83 r;
+				if ( !rxpkt.get(r) ) {
+					printf(" ERR %d\n",rxpkt.get_offset());
+				} else	{
+					printf("  x            %lf\n",r.x);
+					printf("  y            %lf\n",r.y);
+					printf("  z            %lf\n",r.z);
+					printf("  clock bias   %lf\n",r.clock_bias);
+					if ( !rxpkt.is_double() )
+						printf("  time of fix  %f\n",r.u.time_of_fix1);
+					else	printf("  time of fix  %lf\n",r.u.time_of_fix2);
 				}
 			}
 			break;
