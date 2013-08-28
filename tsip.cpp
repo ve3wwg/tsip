@@ -331,6 +331,28 @@ RxPacket::get(s_R4C& recd) {
 }
 
 bool
+RxPacket::get(s_R56& recd) {
+
+	if ( !get(recd.eastvel)
+	  || !get(recd.northvel)
+	  || !get(recd.upvel)
+	  || !get(recd.clock_bias_rate) )
+	  	return false;
+
+	if ( !state_sd )
+		return get(recd.u.time_of_fix1);
+	return get(recd.u.time_of_fix2);
+}
+
+bool
+RxPacket::get(s_R57& recd) {
+	return !get(recd.info_src)
+	  || !get(recd.track_mode)
+	  || !get(recd.fix_time)
+	  || !get(recd.fix_week);
+}
+
+bool
 RxPacket::get(s_R59& recd) {
 	uint8_t n;
 
@@ -491,20 +513,6 @@ RxPacket::get(s_R55& recd) {
 	if ( !get(recd.timing) )
 		return false;
 	if ( !get(recd.auxiliary) )
-		return false;
-	return true;
-}
-
-bool
-RxPacket::get(s_R57& recd) {
-
-	if ( !get(recd.info_src) )
-		return false;
-	if ( !get(recd.diag_code) )
-		return false;
-	if ( !get(recd.fix_time) )
-		return false;
-	if ( !get(recd.fix_week) )
 		return false;
 	return true;
 }
@@ -1485,6 +1493,19 @@ bool
 TxPacket::C3C(uint8_t prn) {
 	return command(0x3C)
 		&& put(prn)
+		&& close();
+}
+
+//////////////////////////////////////////////////////////////////////
+// 3F11	-- EEPROM Segment Commands
+// Response:
+//	R5F11, 8FAC
+//////////////////////////////////////////////////////////////////////
+
+bool
+TxPacket::C3F11() {
+	return command(0x3F)
+		&& put(0x11)
 		&& close();
 }
 

@@ -98,7 +98,7 @@ enum Status46 {
 };
 
 struct s_R46 {
-	Status46 status;	//  Current status of receiver (flags) 
+	Status46 	status;		//  Current status of receiver (flags) 
 	union	{
 		uint8_t	error_code;	//  Error status (flags) 
 		struct	{
@@ -310,7 +310,7 @@ struct s_R56 {
 
 struct s_R57 {
 	uint8_t	info_src;	//  Source of info (flags) 
-	uint8_t	diag_code;	//  Manufacturers diagnostic code 
+	uint8_t	track_mode;	//  Tracking mode
 	float	fix_time;	//  Time of last position fix in GPS seconds 
 	int16_t	fix_week;	//  Week of last position fix, in GPS weeks 
 };
@@ -732,6 +732,9 @@ public:	TxPacket();
 	bool C3A(uint8_t prn=0);	// Last Raw Measurement Request for sat prn
 	bool C3B(uint8_t prn=0);	// Satellite Ephemeris Status Request
 	bool C3C(uint8_t prn=0);	// Satellite Tracking Status Request
+	bool C3F11();			// EEPROM Segment Commands
+
+	
 
 	inline uint16_t size() { return buflen; }
 };

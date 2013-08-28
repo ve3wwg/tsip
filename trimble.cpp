@@ -58,7 +58,35 @@ cmdcb(Packet& pkt,char cmd) {
 			"r - Software Reset\n"
 			"h - Health Request\n"
 			"A - Almanac Request (20)\n"
+			"l - Last Position and Velocity Request\n"
+			"a - Last Raw Measurement Request for sat PRN 0 (3A)\n"
+			"E - Satellite Ephemeris Status Request (3B)\n"
+			"s - Satellite Tracking status (3C)\n"
 			"x/q Quit\n");
+		break;
+	case 's' :
+		printf("3C - Satellite Tracking Status\n");
+		tx.C3C();
+		pkt.put(buf,tx.size());
+		cdump(buf,tx.size());
+		break;
+	case 'a' :
+		printf("3A - Last Raw Measurement Request for sat PRN 0\n");
+		tx.C3A();
+		pkt.put(buf,tx.size());
+		cdump(buf,tx.size());
+		break;
+	case 'E' :
+		printf("3B - Satellite Ephemeris Status Request\n");
+		tx.C3B(0);
+		pkt.put(buf,tx.size());
+		cdump(buf,tx.size());
+		break;
+	case 'l' :
+		printf("37 - Last Position and Velocity Request (l)\n");
+		tx.C37();
+		pkt.put(buf,tx.size());
+		cdump(buf,tx.size());
 		break;
 	case 'A' :
 		printf("20 - Almanac Request (A)\n");
@@ -262,10 +290,53 @@ main(int argc,char **argv) {
 					printf(" ERR %d\n",rxpkt.get_offset());
 				} else	{
 					printf("  status = %d\n",int(r.status));
+					switch ( r.status ) {
+					case DoingPositionFixes	:
+						puts("  (Doing position fixes)");
+						break;
+					case DoNotHaveGPSTimeYet :
+						puts("  (Do not have GPS time yet)");
+						break;
+					case PDOPIsTooHigh :
+						puts("  (PDOP is too high)");
+						break;
+					case NoUsableSatellites	:
+						puts("  (No usable satellites)");
+						break;
+					case Only1UsableSat :
+						puts("  (Only 1 usable satellite)");
+						break;
+					case Only2UsableSats :
+						puts("  (Only 2 usable satellites)");
+						break;
+					case Only3UsableSats :
+						puts("  (Only 3 usable satellites)");
+						break;
+					case ChosenSatIsUnusable :
+						puts("  (Chosen satellite is unusable)");
+						break;
+					default :
+						;		
+					};
 					printf("  error_code = %02X\n",r.u.error_code);
 					printf("    bat failed = %d\n",r.u.flags.battery_failed);
 					printf("    ant fault  = %d\n",r.u.flags.antenna_fault);
 					printf("    exc errors = %d\n",r.u.flags.excessive_errs);
+				}
+			}
+			break;
+		case 0x47 :
+			{
+				s_R47 r;
+				if ( !rxpkt.get(r) ) {
+					printf(" ERR %d\n",rxpkt.get_offset());
+				} else	{
+					printf("  count = %u\n",r.count);
+					for ( unsigned ux=0; ux<r.count; ++ux ) {
+						printf("    %02X level %.lf\n",
+							r.sat[ux].prn,
+							r.sat[ux].siglevel);
+					}
 				}
 			}
 			break;
@@ -275,6 +346,34 @@ main(int argc,char **argv) {
 				if ( !rxpkt.get(r) ) {
 					printf(" ERR %d\n",rxpkt.get_offset());
 				} else	{
+					printf(" message: %-22.22s\n",r.message);
+				}
+			}
+			break;
+		case 0x49 :
+			{
+				s_R49 r;
+				if ( !rxpkt.get(r) ) {
+					printf(" ERR %d\n",rxpkt.get_offset());
+				} else	{
+					for ( short x=0; x<32; ++x )
+						printf("  %2d : %02X\n",x,r.health[x]);
+				}
+			}
+			break;
+		case 0x4A :
+			{
+				s_R4A r;
+				if ( !rxpkt.get(r) ) {
+					printf(" ERR %d\n",rxpkt.get_offset());
+				} else	{
+					printf("  latitude    %f\n",r.latitude);
+					printf("  longitude   %f\n",r.longitude);
+					printf("  altitude    %f\n",r.altitude);
+					printf("  clock bias  %f\n",r.clock_bias);
+					if ( !rxpkt.is_double() )
+						printf("  time of fix %f\n",r.u.time_of_fix1);
+					else	printf("  time of fix %lf\n",r.u.time_of_fix2);
 				}
 			}
 			break;
@@ -284,7 +383,118 @@ main(int argc,char **argv) {
 				if ( !rxpkt.get(r) ) {
 					printf(" ERR %d\n",rxpkt.get_offset());
 				} else	{
-					printf("  machine_id = %02X\n",r.machine_id);
+					printf("  machine_id         = %02X\n",r.machine_id);
+					printf("  almanac incomplete = %d\n",r.u1.status1.almanac_incomplete);
+					printf("  super packets      = %02X\n",r.status2);
+				}
+			}
+			break;
+		case 0x4E :
+			{
+				s_R4E r;
+				if ( !rxpkt.get(r) ) {
+					printf(" ERR %d\n",rxpkt.get_offset());
+				} else	{
+					printf("  Response '%c'\n",r.yn);
+				}
+			}
+			break;
+		case 0x4F :
+			{
+				s_R4F r;
+				if ( !rxpkt.get(r) ) {
+					printf(" ERR %d\n",rxpkt.get_offset());
+				} else	{
+					printf("  a0          %lf\n",r.a0);
+					printf("  a1          %f\n",r.a1);
+					printf("  delta t_ls  %d\n",r.delta_t_ls);
+					printf("  tot         %f\n",r.tot);
+					printf("  wn_t        %d\n",r.wn_t);
+					printf("  wn_lsf      %d\n",r.wn_lsf);
+					printf("  dn          %d\n",r.dn);
+					printf("  delta t_lsf %d\n",r.delta_t_lsf);
+				}
+			}
+			break;
+		case 0x54 :
+			{
+				s_R54 r;
+				if ( !rxpkt.get(r) ) {
+					printf(" ERR %d\n",rxpkt.get_offset());
+				} else	{
+					printf("  bias         %f\n",r.bias);
+					printf("  bias rate    %f\n",r.bias_rate);
+					if ( !rxpkt.is_double() )
+						printf("  time of fix  %f\n",r.u.time_of_fix1);
+					else	printf("  time of fix  %lf\n",r.u.time_of_fix2);
+				}
+			}
+			break;
+		case 0x55 :
+			{
+				s_R55 r;
+				if ( !rxpkt.get(r) ) {
+					printf(" ERR %d\n",rxpkt.get_offset());
+				} else	{
+					printf("  position  %02X\n",r.position);
+					printf("  velocity  %02X\n",r.velocity);
+					printf("  timing    %02X\n",r.timing);
+					printf("  auxiliary %02X\n",r.auxiliary);
+				}
+			}
+			break;
+		case 0x56 :
+			{
+				s_R56 r;
+				if ( !rxpkt.get(r) ) {
+					printf(" ERR %d\n",rxpkt.get_offset());
+				} else	{
+					printf("  East velocity   %f\n",r.eastvel);
+					printf("  North velocity  %f\n",r.northvel);
+					printf("  Up velocity     %f\n",r.upvel);
+					printf("  Clock bias rate %f\n",r.clock_bias_rate);
+					if ( !rxpkt.is_double() )
+						printf("  Time of fix     %f\n",r.u.time_of_fix1);
+					else	printf("  Time of fix     %lf\n",r.u.time_of_fix2);
+				}
+			}
+			break;
+		case 0x57 :
+			{
+				s_R57 r;
+				if ( !rxpkt.get(r) ) {
+					printf(" ERR %d\n",rxpkt.get_offset());
+				} else	{
+					printf("  info src         %02X (%s)\n",r.info_src,
+						!r.info_src ? "none" : "regular fix");
+					printf("  tracking mode    %02X ",r.track_mode);
+					switch ( r.track_mode ) {
+					case 0 :
+						puts("auto");
+						break;
+					case 1 :
+						puts("time only 1-SV");
+						break;
+					case 2 :
+						puts("2D clock hold");
+						break;
+					case 3 :
+						puts("2D");
+						break;
+					case 4 :
+						puts("3D");
+						break;
+					case 5 :
+						puts("overdetermined clock");
+						break;
+					case 6 :
+						puts("DGPS reference");
+						break;
+					default :
+						printf("??\n");
+					}
+					printf("  time of last fix  %f\n",r.fix_time);
+					printf("  week of last fix  %d\n",r.fix_week);
 				}
 			}
 			break;
