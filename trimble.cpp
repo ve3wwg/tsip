@@ -62,7 +62,55 @@ cmdcb(Packet& pkt,char cmd) {
 			"a - Last Raw Measurement Request for sat PRN 0 (3A)\n"
 			"E - Satellite Ephemeris Status Request (3B)\n"
 			"s - Satellite Tracking status (3C)\n"
+			"0 - Configuration 0 : Land (BB00)\n"
+			"9 - Set Request Packet Broadcast Mask (8EA5)\n"
 			"x/q Quit\n");
+		break;
+	case '0' :
+		printf("BB00 - Configuration 0\n");
+		{
+			s_RBB00 p;
+
+			p.opdim 	= 0;	// Automatic
+			p.dgps_mode 	= 3;	// Auto
+			p.dyn_mode 	= 1;	// Land
+			p.sol_mode 	= 1;
+			p.elev_mask 	= 0.1745;
+			p.amu_mask 	= 4.0;
+			p.pdop_mask 	= 8;
+			p.pdop_switch 	= 6;
+			p.dgps_age 	= 30;
+			p.foliage_mode 	= 0;
+			p.meas_rate 	= 0;
+			p.posfx_rate 	= 0;
+
+			tx.CBB00(p);
+			pkt.put(buf,tx.size());
+			cdump(buf,tx.size());
+		}
+		break;
+	case '9' :
+		printf("8EA5 - Configure Packet Broadcast Mask\n");
+		{
+			s_R8FA5 p;
+
+			p.u.x8F20 	= 1;
+			p.u.auto_tsip 	= 1;
+			p.u.x8FAB 	= 1;
+			p.u.x8FAC 	= 1;
+			p.u.x8F0B_sya 	= 0;
+			p.u.x8F0B_eva 	= 1;
+			p.u.x8F0B_evb 	= 0;
+			p.u.x8F0B_syb 	= 0;
+			p.u.x8FAD_eva 	= 1;
+			p.u.x8FAD_syb 	= 0;
+			p.u.x8FAD_evb 	= 0;
+			p.mbz = 0;
+
+			tx.C8EA5(p);
+			pkt.put(buf,tx.size());
+			cdump(buf,tx.size());
+		}
 		break;
 	case 's' :
 		printf("3C - Satellite Tracking Status\n");
@@ -579,6 +627,63 @@ main(int argc,char **argv) {
 					if ( !rxpkt.is_double() )
 						printf("  time of fix  %f\n",r.u.time_of_fix1);
 					else	printf("  time of fix  %lf\n",r.u.time_of_fix2);
+				}
+			}
+			break;
+		case 0x84 :
+			{
+				s_R84 r;
+				if ( !rxpkt.get(r) ) {
+					printf(" ERR %d\n",rxpkt.get_offset());
+				} else	{
+					printf("  latitude     %lf\n",r.latitude);
+					printf("  longitude    %lf\n",r.longitude);
+					printf("  altitude     %lf\n",r.altitude);
+					printf("  clock bias   %lf\n",r.clock_bias);
+					if ( !rxpkt.is_double() )
+						printf("  time of fix  %f\n",r.u.time_of_fix1);
+					else	printf("  time of fix  %lf\n",r.u.time_of_fix2);
+				}
+			}
+			break;
+		case 0x8FA5 :
+			{
+				s_R8FA5 r;
+				if ( !rxpkt.get(r) ) {
+					printf(" ERR %d\n",rxpkt.get_offset());
+				} else	{
+					printf("  x8F20     = %d\n",r.u.x8F20);
+					printf("  auto_tsip = %d\n",r.u.auto_tsip);
+					printf("  x8FAB     = %d\n",r.u.x8FAB);
+					printf("  x8FAC     = %d\n",r.u.x8FAC);
+					printf("  x8F0B_sya = %d\n",r.u.x8F0B_sya);
+					printf("  x8F0B_eva = %d\n",r.u.x8F0B_eva);
+					printf("  x8F0B_evb = %d\n",r.u.x8F0B_evb);
+					printf("  x8F0B_syb = %d\n",r.u.x8F0B_syb);
+					printf("  x8FAD_eva = %d\n",r.u.x8FAD_eva);
+					printf("  x8FAD_syb = %d\n",r.u.x8FAD_syb);
+					printf("  x8FAD_evb = %d\n",r.u.x8FAD_evb);
+				}
+			}
+			break;			
+		case 0xBB00 :
+			{
+				s_RBB00 r;
+				if ( !rxpkt.get(r) ) {
+					printf(" ERR %d\n",rxpkt.get_offset());
+				} else	{
+					printf("  opdim        = %u\n",r.opdim);
+					printf("  dgps_mode    = %u\n",r.dgps_mode);
+					printf("  dyn_mode     = %u\n",r.dyn_mode);
+					printf("  sol_mode     = %u\n",r.sol_mode);
+					printf("  elev_mask    = %f\n",r.elev_mask);
+					printf("  amu_mask     = %f\n",r.amu_mask);
+					printf("  pdop_mask    = %f\n",r.pdop_mask);
+					printf("  pdop_switch  = %f\n",r.pdop_switch);
+					printf("  dgps_age     = %u\n",r.dgps_age);
+					printf("  foliage_mode = %u\n",r.foliage_mode);
+					printf("  meas_rate    = %u\n",r.meas_rate);
+					printf("  posfx_rate   = %u\n",r.posfx_rate);
 				}
 			}
 			break;
